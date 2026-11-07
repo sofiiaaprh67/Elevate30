@@ -63,8 +63,12 @@ const INTAKE: Intake = {
   exerciseDays: "1-2",
   sleepHours: "7-8",
   quitReason: "all_or_nothing",
-  reviewWeekday: 0,
-  reviewTime: "19:00",
+  freeTimeWeekend: "2-4",
+  criticalWeeks: [2],
+  criticalNote: "Exámenes",
+  worthIt: "Llegar a los exámenes con el temario al día y sin ir siempre cansada",
+  wantsPartner: true,
+  reminderTime: "20:00",
 };
 
 const REVIEW_DAY_7 = {
@@ -102,8 +106,12 @@ function buildDemo() {
     exercise_days: INTAKE.exerciseDays,
     sleep_hours: INTAKE.sleepHours,
     quit_reason: INTAKE.quitReason,
-    review_weekday: INTAKE.reviewWeekday,
-    review_time: INTAKE.reviewTime,
+    free_time_weekend: INTAKE.freeTimeWeekend,
+    critical_weeks: INTAKE.criticalWeeks,
+    critical_note: INTAKE.criticalNote,
+    worth_it: INTAKE.worthIt,
+    wants_partner: INTAKE.wantsPartner,
+    reminder_time: INTAKE.reminderTime,
     current_step: 12,
     completed_at: `${start}T09:00:00Z`,
   };

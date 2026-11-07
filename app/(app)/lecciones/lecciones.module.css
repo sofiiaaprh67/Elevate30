@@ -34,7 +34,7 @@
 }
 .row {
   display: grid;
-  grid-template-columns: 36px 1fr;
+  grid-template-columns: 36px 1fr auto;
   align-items: center;
   gap: var(--s-3);
   min-height: 64px;
@@ -106,4 +106,17 @@ a.row:hover {
 .back:hover {
   color: var(--porcelain);
   text-decoration: none;
+}
+.date {
+  display: grid;
+  justify-items: end;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ash);
+  font-variant-numeric: tabular-nums;
+}
+.date span {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: capitalize;
 }

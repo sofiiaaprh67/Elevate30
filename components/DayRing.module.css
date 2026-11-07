@@ -87,3 +87,37 @@
   font-size: 14px;
   color: var(--ash);
 }
+
+/* Versión compacta (cabecera de Hoy) */
+.compact {
+  width: 132px;
+  margin: 0;
+  flex-shrink: 0;
+}
+.compact .num {
+  font-size: 44px;
+}
+.compact .of {
+  font-size: 12px;
+}
+.compact .seg[data-level="full"] {
+  stroke-width: 16;
+}
+.compact .seg[data-level="half"] {
+  stroke-width: 11;
+}
+.compact .seg[data-level="min"],
+.compact .seg[data-level="none"] {
+  stroke-width: 6;
+}
+.compact .seg[data-level="future"] {
+  stroke-width: 4;
+}
+.compact .seg[data-today] {
+  stroke-width: 8;
+}
+@media (prefers-reduced-motion: reduce) {
+  .seg {
+    animation: none;
+  }
+}

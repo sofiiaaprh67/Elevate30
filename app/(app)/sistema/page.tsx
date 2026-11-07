@@ -22,6 +22,6 @@ export default async function SistemaPage() {
   const intake = intakeData?.completed ? toIntake(intakeData.draft) : null;
   if (!intake || !plan) redirect("/cuestionario");
 
-  const pieces = buildSystem({ entries, intake, plan, currentDay: currentProgramDay(start, todayInMadrid()) });
+  const pieces = buildSystem({ entries, intake, plan, start, anchor: user.anchorSlot, currentDay: currentProgramDay(start, todayInMadrid()) });
   return <SystemView name={intake.name} pieces={pieces} />;
 }

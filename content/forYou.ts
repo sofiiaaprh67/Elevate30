@@ -4,7 +4,7 @@
  */
 import { FOUNDER_GOAL } from "@/lib/domain/calendar";
 import { generalDurations } from "@/lib/domain/plan";
-import type { ISODate } from "@/lib/domain/program";
+import { dateForDay, weekdayOf, type ISODate } from "@/lib/domain/program";
 import {
   daysDone,
   groupByDate,
@@ -34,6 +34,10 @@ export type ForYouContext = {
   leastDone: Slot;
   /** Lo que escribió el día 1: «¿Qué quieres que sea distinto el día 30?» */
   dayOneChange?: string;
+  /** Hábito ancla de la persona. */
+  anchor?: Slot;
+  /** Día de la semana de las revisiones (el del día 7 de la persona). */
+  reviewWeekday: number;
 };
 
 const area = (a: Area) => lowerFirst(AREA_LABELS[a]);
@@ -64,13 +68,16 @@ const QUIT_PHRASES: Record<Intake["quitReason"], string> = {
     "Te ha frenado la motivación: en los días malos no esperes a tener ganas; haz el mínimo y deja que la acción traiga las ganas.",
   all_or_nothing: "Te ha frenado el todo o nada: un día en mínimo cuenta como día cumplido.",
   where_to_start:
-    "Te ha frenado no saber por dónde empezar: en los días malos, abre la web y haz solo lo primero.",
+    "Te ha frenado no saber por dónde empezar: en los días malos, abre la app y haz solo lo primero.",
   other: "Piensa qué te hizo abandonar antes y qué harás distinto esta vez.",
 };
 
 function statsPhrase(c: ForYouContext) {
-  return `Llevas ${c.daysDone} ${c.daysDone === 1 ? "día" : "días"} con check-in, una racha de ${c.streak} y un ${c.percentFull}% de hábitos en nivel completo.`;
+  return `Llevas ${c.daysDone} ${c.daysDone === 1 ? "día que cuenta" : "días que cuentan"}, una racha de ${c.streak} y un ${c.percentFull}% de hábitos en nivel completo.`;
 }
+
+const WEEK_LIST = (weeks: number[]) =>
+  weeks.length === 1 ? `tu semana ${weeks[0]}` : `tus semanas ${weeks.slice(0, -1).join(", ")} y ${weeks.at(-1)}`;
 
 export function forYouPhrase(day: number, c: ForYouContext): string | null {
   const { intake, plan } = c;
@@ -85,8 +92,6 @@ export function forYouPhrase(day: number, c: ForYouContext): string | null {
     }
     case 3:
       return `${GOAL_EXAMPLES[occ]} Tu objetivo ahora mismo: «${intake.goalText}»`;
-    case 4:
-      return `Tus hábitos: ${plan.body.name}, ${plan.mind.name}, ${plan.goal.name}.`;
     case 5: {
       const d = generalDurations(intake.freeTime);
       return `Con ${FREE_TIME_PHRASE[intake.freeTime]} al día, tus niveles son de ${d.full}, ${d.half} y ${d.min} minutos.`;
@@ -95,8 +100,12 @@ export function forYouPhrase(day: number, c: ForYouContext): string | null {
       return `Tienes más energía ${ENERGY_PHRASE[intake.energy]}: pon «${plan.goal.name}» a las ${ENERGY_TIME[intake.energy]}.`;
     case 7:
       return statsPhrase(c);
+    case 4:
+      return c.anchor
+        ? `Tus hábitos: ${plan.body.name}, ${plan.mind.name} y ${plan.goal.name}. Tu ancla ahora es «${plan[c.anchor].name}».`
+        : `Tus hábitos: ${plan.body.name}, ${plan.mind.name} y ${plan.goal.name}.`;
     case 8:
-      return `Tu mínimo de hoy: ${lowerFirst(plan.body.levels.min)}, ${lowerFirst(plan.mind.levels.min)} y ${lowerFirst(plan.goal.levels.min)}.`;
+      return QUIT_PHRASES[intake.quitReason];
     case 9:
       if (occ === "study") return "Piensa en clases, entregas y tu bloque de estudio.";
       if (occ === "business") return "Una tarea que acerque ventas, una de producto y una personal.";
@@ -117,8 +126,17 @@ export function forYouPhrase(day: number, c: ForYouContext): string | null {
       return `Tu nota en alimentación es ${intake.wheel.nutrition}/10.`;
     case 14:
       return `Según tus datos, el hábito que más te cuesta es «${plan[c.leastDone].name}».`;
-    case 16:
-      return QUIT_PHRASES[intake.quitReason];
+    case 16: {
+      const weeks = intake.criticalWeeks ?? [];
+      const anchor = c.anchor ? ` Lo único obligatorio será «${plan[c.anchor].name}».` : "";
+      if (weeks.length) {
+        const note = intake.criticalNote ? ` (${lowerFirst(intake.criticalNote)})` : "";
+        return `Marcaste como complicada ${WEEK_LIST(weeks)}${note}: la víspera te propondremos activar este modo.${anchor}`;
+      }
+      if (occ === "study" || occ === "study_work") return `Piensa en tus semanas de exámenes.${anchor}`;
+      if (occ === "business") return `Piensa en semanas de lanzamiento o de mucho trabajo.${anchor}`;
+      return `Piensa en semanas de viaje o de picos de trabajo.${anchor}`;
+    }
     case 17: {
       const h = plan[c.leastDone];
       return `El hábito que menos cumples es «${h.name}». Prueba con su nivel mínimo: ${lowerFirst(h.levels.min)}.`;
@@ -139,10 +157,11 @@ export function forYouPhrase(day: number, c: ForYouContext): string | null {
       return `El hábito que más cumples es «${plan[c.mostDone].name}».`;
     case 23:
       return `El hábito que menos cumples es «${plan[c.leastDone].name}»: es el mejor candidato para engancharlo a un ancla.`;
-    case 24:
-      if (occ === "study" || occ === "study_work") return "Piensa en tus semanas de exámenes.";
-      if (occ === "business") return "Piensa en semanas de lanzamiento o de mucho trabajo.";
-      return "Piensa en semanas de viaje o de picos de trabajo.";
+    case 24: {
+      if (!c.anchor) return null;
+      const h = plan[c.anchor];
+      return `Vuelvas cuando vuelvas, empieza por tu ancla: ${lowerFirst(h.levels.min)}.`;
+    }
     case 25:
     case 26:
     case 28:
@@ -156,7 +175,7 @@ export function forYouPhrase(day: number, c: ForYouContext): string | null {
         ? `${statsPhrase(c)} Has conseguido la insignia Fundador.`
         : statsPhrase(c);
     case 27:
-      return `Ahora tu revisión es los ${WEEKDAY_PLURAL[intake.reviewWeekday]} a las ${intake.reviewTime}.`;
+      return `Tus revisiones caen en ${WEEKDAY_PLURAL[c.reviewWeekday]}: ponla en tu calendario como una cita que se repite.`;
     default:
       return null;
   }
@@ -171,6 +190,7 @@ export function forYouForDay({
   start,
   today,
   dayOneChange,
+  anchor,
 }: {
   day: number;
   intake: Intake;
@@ -179,6 +199,7 @@ export function forYouForDay({
   start: ISODate;
   today: ISODate;
   dayOneChange?: string;
+  anchor?: Slot;
 }): string | null {
   const byDate = groupByDate(checkins);
   const past = checkins.filter((c) => c.date <= today);
@@ -191,5 +212,7 @@ export function forYouForDay({
     mostDone: habitByScore(past, "most"),
     leastDone: habitByScore(past, "least"),
     dayOneChange,
+    anchor,
+    reviewWeekday: weekdayOf(dateForDay(start, 7)),
   });
 }

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { LESSONS } from "@/content/lessons";
-import { phaseForDay, type Phase } from "@/lib/domain/program";
+import { dateForDay, formatShortDate, formatWeekdayShort, phaseForDay, type ISODate, type Phase } from "@/lib/domain/program";
 import l from "./lecciones.module.css";
 
 const PHASES: { phase: Phase; label: string; days: string }[] = [
@@ -16,9 +16,12 @@ const PHASES: { phase: Phase; label: string; days: string }[] = [
 export function LessonsIndexView({
   currentDay,
   doneDays,
+  start,
   href = (day: number) => `/lecciones/${day}`,
 }: {
   currentDay: number;
+  /** Día 1 de la persona: cada lección muestra su fecha. */
+  start: ISODate;
   doneDays: number[];
   href?: (day: number) => string;
 }) {
@@ -69,6 +72,10 @@ export function LessonsIndexView({
                       {x.title}
                     </span>
                     <span className={l.sub}>{status}</span>
+                  </span>
+                  <span className={l.date} aria-hidden="true">
+                    <span>{formatWeekdayShort(dateForDay(start, x.day))}</span>
+                    {formatShortDate(dateForDay(start, x.day))}
                   </span>
                 </>
               );

@@ -27,12 +27,15 @@ export function DayRing({
   day,
   byDate,
   caption,
+  compact,
 }: {
   start: ISODate;
   today: ISODate;
   day: number;
   byDate: CheckinsByDate;
-  caption: string;
+  caption?: string;
+  /** Versión pequeña para la cabecera de Hoy. */
+  compact?: boolean;
 }) {
   const days = Array.from({ length: PROGRAM_DAYS }, (_, i) => {
     const date = dateForDay(start, i + 1);
@@ -40,10 +43,10 @@ export function DayRing({
     return { n: i + 1, level: future ? null : bestLevel(byDate[date]), future, isToday: date === today };
   });
   const done = days.filter((d) => d.level).length;
-  const summary = `Día ${day} de ${PROGRAM_DAYS}. ${done} ${done === 1 ? "día cumplido" : "días cumplidos"} hasta hoy.`;
+  const summary = `Día ${day} de ${PROGRAM_DAYS}. ${done} ${done === 1 ? "día que cuenta" : "días que cuentan"} hasta hoy.`;
 
   return (
-    <figure className={s.ring}>
+    <figure className={compact ? `${s.ring} ${s.compact}` : s.ring}>
       <svg viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={summary}>
         <defs>
           <linearGradient id="ring-grad" x1="0" y1="0" x2="1" y2="1">
@@ -67,7 +70,7 @@ export function DayRing({
         ))}
       </svg>
       <figcaption className={s.center}>
-        <span className={s.caption}>{caption}</span>
+        {caption ? <span className={s.caption}>{caption}</span> : null}
         <span className={s.num}>{day}</span>
         <span className={s.of}>de {PROGRAM_DAYS}</span>
       </figcaption>

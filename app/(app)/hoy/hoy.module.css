@@ -513,3 +513,307 @@
   color: var(--white);
 }
 
+
+/* =====================================================================
+   v2: panel del día (anillo compacto + fase), adaptación y avisos
+   ===================================================================== */
+.hero {
+  position: relative;
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-2) 0 var(--s-1);
+}
+.heroTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 32px;
+}
+.streak[data-risk] {
+  background: rgba(255, 210, 122, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(255, 210, 122, 0.45);
+}
+.streak[data-risk] svg {
+  color: var(--warn);
+}
+.heroMain {
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
+}
+.heroInfo {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.phaseName {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  background: var(--brand-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.phaseLine {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--porcelain);
+}
+.heroFacts {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.heroFacts li {
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  box-shadow: inset 0 0 0 1px var(--steel-2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ash);
+}
+.riskNote {
+  padding: 12px var(--s-4);
+  border-radius: var(--r-field);
+  background: rgba(255, 210, 122, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 210, 122, 0.3);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--porcelain);
+}
+
+/* ---------- Modo del día ---------- */
+.mode {
+  display: grid;
+  gap: var(--s-2);
+}
+.modeSeg {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+  border-radius: var(--r-pill);
+  background: var(--graphite);
+  box-shadow: var(--line);
+}
+.modeOpt {
+  min-height: 44px;
+  border-radius: var(--r-pill);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ash);
+  transition:
+    background-color 0.25s var(--ease),
+    color 0.25s var(--ease);
+}
+.modeOpt:hover {
+  color: var(--porcelain);
+}
+.modeOpt[aria-checked="true"] {
+  background: var(--steel);
+  color: var(--porcelain);
+}
+.modeOpt:last-child[aria-checked="true"] {
+  background: rgba(0, 217, 255, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(0, 217, 255, 0.5);
+  color: var(--cyan);
+}
+.modeNote {
+  padding: 0 var(--s-2);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ash);
+}
+
+/* ---------- Modo semana difícil ---------- */
+.hardWeek {
+  display: grid;
+  gap: 6px;
+  padding: var(--s-4) var(--s-5);
+  border-radius: var(--r-tile);
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(255, 210, 122, 0.14), transparent 60%),
+    var(--carbon);
+  box-shadow: inset 0 0 0 1px rgba(255, 210, 122, 0.4);
+}
+.hardWeekTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.015em;
+  color: var(--warn);
+}
+.hardWeekIcon {
+  width: 18px;
+  height: 18px;
+}
+.hardWeekText {
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--porcelain);
+}
+.hwButton {
+  justify-self: start;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: var(--r-pill);
+  background: var(--warn);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+}
+.hwButton:disabled {
+  opacity: 0.6;
+}
+.hwLink {
+  justify-self: start;
+  min-height: 44px;
+  padding: 0 2px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ash);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- Avisos v2 ---------- */
+.notice {
+  grid-template-columns: 28px 1fr;
+}
+.noticeBody {
+  display: grid;
+  gap: var(--s-3);
+}
+.notice[data-kind="golden"] .noticeIcon {
+  background: var(--warn);
+}
+.notice[data-kind="hard_week"] .noticeIcon {
+  background: var(--warn);
+}
+.notice[data-kind="struggling"] .noticeIcon {
+  background: var(--ash);
+}
+
+/* ---------- Lección pendiente y lección en espera ---------- */
+.pending {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-4) var(--s-5);
+  border-radius: var(--r-tile);
+  background: var(--graphite);
+  box-shadow: inset 0 0 0 1px rgba(0, 217, 255, 0.35);
+  color: var(--porcelain);
+}
+.pending:hover {
+  text-decoration: none;
+  background: var(--carbon);
+}
+.pending > svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--cyan);
+}
+.pendingText {
+  display: grid;
+  gap: 2px;
+}
+.pendingLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cyan);
+}
+.pendingTitle {
+  font-weight: 600;
+  font-size: 16px;
+}
+.waiting {
+  display: grid;
+  gap: 6px;
+  padding: var(--s-5);
+  border-radius: var(--r-tile);
+  box-shadow: inset 0 0 0 1px var(--steel);
+}
+.waitingLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ash);
+}
+.waitingTitle {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: var(--ash);
+}
+.waitingText {
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--porcelain);
+}
+
+/* ---------- Herramienta práctica ---------- */
+.practice {
+  display: grid;
+  gap: 4px;
+  padding: var(--s-4);
+  border-radius: var(--r-field);
+  box-shadow: inset 0 0 0 1px var(--steel-2);
+}
+.practiceLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ash);
+}
+.practiceText {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--porcelain);
+}
+a.scienceSource {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: var(--cyan);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(0, 217, 255, 0.4);
+}
+.inlineHw {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border-radius: var(--r-field);
+  background: rgba(255, 210, 122, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 210, 122, 0.3);
+  font-size: 15px;
+}
+.nextWeek {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  border-radius: var(--r-field);
+  background: rgba(255, 210, 122, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 210, 122, 0.3);
+}
+
+@media (max-width: 360px) {
+  .heroMain {
+    gap: var(--s-4);
+  }
+  .phaseName {
+    font-size: 26px;
+  }
+}

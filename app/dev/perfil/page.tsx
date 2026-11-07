@@ -1,11 +1,11 @@
 import { ProfileView } from "@/app/(app)/perfil/ProfileView";
-import { ReviewForm } from "@/app/(app)/perfil/ReviewForm";
+import { ReminderForm } from "@/app/(app)/perfil/ReminderForm";
 import s from "@/app/(app)/shell.module.css";
 import { BottomNav } from "@/components/BottomNav";
 import pf from "@/app/(app)/perfil/perfil.module.css";
 import { generatePlan } from "@/lib/domain/plan";
 import type { Intake } from "@/lib/domain/types";
-import { devUpdateReview } from "../actions-perfil";
+import { devUpdateReminder } from "../actions-perfil";
 
 const SAMPLE: Intake = {
   name: "Lucía",
@@ -20,8 +20,12 @@ const SAMPLE: Intake = {
   exerciseDays: "none",
   sleepHours: "6-7",
   quitReason: "all_or_nothing",
-  reviewWeekday: 0,
-  reviewTime: "19:00",
+  freeTimeWeekend: "2-4",
+  criticalWeeks: [2],
+  criticalNote: "Exámenes",
+  worthIt: "Llegar a los exámenes con el temario al día y sin ir siempre cansada",
+  wantsPartner: true,
+  reminderTime: "20:00",
 };
 
 export default function DevPerfil() {
@@ -34,7 +38,8 @@ export default function DevPerfil() {
           isFounder
           intake={SAMPLE}
           plan={generatePlan(SAMPLE)}
-          reviewForm={<ReviewForm weekday={0} time="19:00" action={devUpdateReview} />}
+          program={{ startText: "lunes, 11 de enero", reviewWeekday: 0, canChangeDate: true }}
+          reminderForm={<ReminderForm time="20:00" action={devUpdateReminder} />}
           signOut={
             <button type="button" className={pf.signOut}>
               Cerrar sesión

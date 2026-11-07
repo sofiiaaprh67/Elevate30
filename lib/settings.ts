@@ -20,3 +20,16 @@ export async function getStartDate(userId?: string): Promise<ISODate> {
     DEFAULT_START_DATE
   );
 }
+
+export type StartWindow = { from: ISODate; to: ISODate; recommended: ISODate };
+
+/** Ventana en la que cada persona puede elegir su día 1, y la fecha recomendada. */
+export async function getStartWindow(): Promise<StartWindow> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("settings").select("start_from, start_to, start_date").eq("id", 1).maybeSingle();
+  return {
+    from: (data?.start_from as ISODate | undefined) ?? "2027-01-01",
+    to: (data?.start_to as ISODate | undefined) ?? "2027-01-18",
+    recommended: (data?.start_date as ISODate | undefined) ?? DEFAULT_START_DATE,
+  };
+}

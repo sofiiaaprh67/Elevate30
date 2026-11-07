@@ -11,6 +11,13 @@ export type CurrentUser = {
   id: string;
   email: string;
   role: Role;
+  /** Día 1 elegido por la persona (null si aún no lo ha elegido). */
+  programStart: string | null;
+  anchorSlot: "body" | "mind" | "goal" | null;
+  committedAt: string | null;
+  healthConsentAt: string | null;
+  /** Último día del modo semana difícil, si está activo. */
+  hardWeekUntil: string | null;
 };
 
 /** Usuario verificado (firma del JWT comprobada) o null. */
@@ -33,7 +40,11 @@ export const requireUser = cache(async (): Promise<CurrentUser> => {
 
   const supabase = await createClient();
   const [{ data: profile }, { data: access }] = await Promise.all([
-    supabase.from("profiles").select("id, email, role").eq("id", userId).maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("id, email, role, program_start, anchor_slot, committed_at, health_consent_at, hard_week_until")
+      .eq("id", userId)
+      .maybeSingle(),
     supabase.rpc("has_access"),
   ]);
 
@@ -42,7 +53,16 @@ export const requireUser = cache(async (): Promise<CurrentUser> => {
     redirect("/auth/salir?motivo=sin-acceso");
   }
 
-  return { id: profile.id, email: profile.email, role: profile.role as Role };
+  return {
+    id: profile.id,
+    email: profile.email,
+    role: profile.role as Role,
+    programStart: profile.program_start ?? null,
+    anchorSlot: profile.anchor_slot ?? null,
+    committedAt: profile.committed_at ?? null,
+    healthConsentAt: profile.health_consent_at ?? null,
+    hardWeekUntil: profile.hard_week_until ?? null,
+  };
 });
 
 export async function requireAdmin(): Promise<CurrentUser> {

@@ -6,11 +6,25 @@ import s from "./HabitCard.module.css";
 
 const LEVELS = ["full", "half", "min"] as const;
 
-export function HabitCard({ habit, tip, action }: { habit: Habit; tip?: string | null; action?: ReactNode }) {
+export function HabitCard({
+  habit,
+  tip,
+  anchor,
+  action,
+}: {
+  habit: Habit;
+  tip?: string | null;
+  /** Es el ancla de la persona. */
+  anchor?: boolean;
+  action?: ReactNode;
+}) {
   return (
     <article className={s.card} aria-labelledby={`habit-${habit.slot}`}>
       <div className={s.head}>
-        <span className={s.slot}>{SLOT_LABELS[habit.slot]}</span>
+        <span className={s.slot}>
+          {SLOT_LABELS[habit.slot]}
+          {anchor ? <span className={s.anchor}>Tu ancla</span> : null}
+        </span>
         <span className={s.when}>
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
             <circle cx="8" cy="8" r="6" />

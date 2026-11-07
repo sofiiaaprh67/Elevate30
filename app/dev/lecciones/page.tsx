@@ -9,7 +9,7 @@ export default async function DevLecciones({ searchParams }: { searchParams: Pro
   return (
     <>
       <main id="contenido" className={s.main}>
-        <LessonsIndexView currentDay={day} doneDays={doneDays} href={(d) => `/dev/hoy?dia=${d}`} />
+        <LessonsIndexView currentDay={day} doneDays={doneDays} start="2027-01-11" href={(d) => `/dev/hoy?dia=${d}`} />
       </main>
       <BottomNav />
     </>

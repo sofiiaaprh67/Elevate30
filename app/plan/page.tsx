@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { AnchorPicker } from "@/components/AnchorPicker";
 import { SwapHabitButton } from "@/components/SwapHabitButton";
 import { requireUser } from "@/lib/auth";
+import { setAnchor } from "@/lib/data/habits";
 import { getIntake, getPlan } from "@/lib/data/intake";
-import { programState, todayInMadrid } from "@/lib/domain/program";
+import { currentProgramDay, todayInMadrid } from "@/lib/domain/program";
 import { getStartDate } from "@/lib/settings";
 import { PlanView } from "./PlanView";
 
@@ -12,10 +14,10 @@ export const metadata: Metadata = { title: "Tu plan" };
 export default async function PlanPage() {
   const user = await requireUser();
   const [intake, plan, start] = await Promise.all([getIntake(user.id), getPlan(user.id), getStartDate(user.id)]);
-  if (!intake?.completed || !plan) redirect("/cuestionario");
+  if (!intake?.completed || !plan) redirect("/");
 
-  const state = programState(start, todayInMadrid());
-  const cta = state.kind === "active" && state.day > 1 ? "Ir a hoy" : "Empezar mi día 1";
+  const day = currentProgramDay(start, todayInMadrid());
+  const dayZero = !user.committedAt;
 
   return (
     <PlanView
@@ -25,7 +27,12 @@ export default async function PlanPage() {
       energy={intake.draft.energy}
       goalType={intake.draft.goalType}
       plan={plan}
-      cta={cta}
+      anchor={user.anchorSlot}
+      anchorPicker={<AnchorPicker plan={plan} value={user.anchorSlot} action={setAnchor} />}
+      dayZero={dayZero}
+      canSwap={day <= 4}
+      cta={dayZero ? "Seguir: tu compromiso" : day >= 1 ? "Ir a hoy" : "Volver"}
+      ctaHref={dayZero ? "/compromiso" : "/hoy"}
       swap={(slot, habitName) => <SwapHabitButton slot={slot} habitName={habitName} />}
     />
   );

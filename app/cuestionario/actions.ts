@@ -32,8 +32,18 @@ export async function completeIntake(input: unknown): Promise<SaveResult & { ste
   if (!intake) {
     return { ok: false, error: "Falta alguna respuesta.", step: firstIncompleteStep(draft) ?? 1 };
   }
+  if (!draft.healthConsent && !user.healthConsentAt) {
+    return { ok: false, error: "Necesitamos tu permiso para usar tus respuestas de sueño y bienestar.", step: 1 };
+  }
 
   const supabase = await createClient();
+  if (!user.healthConsentAt) {
+    const { error: consentError } = await supabase
+      .from("profiles")
+      .update({ health_consent_at: new Date().toISOString() })
+      .eq("id", user.id);
+    if (consentError) return { ok: false, error: "No hemos podido guardar tu permiso. Inténtalo de nuevo." };
+  }
   const existing = await getIntake(user.id);
 
   const { error: intakeError } = await supabase.from("intake").upsert(

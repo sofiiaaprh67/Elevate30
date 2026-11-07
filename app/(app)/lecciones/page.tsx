@@ -10,5 +10,5 @@ export const metadata: Metadata = { title: "Lecciones" };
 export default async function LeccionesPage() {
   const user = await requireUser();
   const [start, doneDays] = await Promise.all([getStartDate(user.id), getDoneDays(user.id)]);
-  return <LessonsIndexView currentDay={currentProgramDay(start, todayInMadrid())} doneDays={doneDays} />;
+  return <LessonsIndexView currentDay={currentProgramDay(start, todayInMadrid())} doneDays={doneDays} start={start} />;
 }

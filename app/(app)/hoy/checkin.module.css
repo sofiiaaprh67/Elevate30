@@ -34,28 +34,33 @@
   font-size: 24px;
   letter-spacing: -0.03em;
 }
-.count {
+.status {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: var(--r-pill);
+  box-shadow: inset 0 0 0 1px var(--steel-2);
+  font-size: 13px;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color: var(--ash);
+  transition:
+    background-color 0.3s var(--ease),
+    color 0.3s var(--ease);
 }
-.dots {
-  display: inline-flex;
-  gap: 4px;
+.status svg {
+  width: 14px;
+  height: 14px;
 }
-.dots span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  box-shadow: inset 0 0 0 1.5px var(--steel-2);
-  transition: background-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+.status[data-counts] {
+  background: rgba(0, 217, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(0, 217, 255, 0.5);
+  color: var(--cyan);
 }
-.dots span[data-on] {
-  background: var(--cyan);
-  box-shadow: none;
+.card[data-counts]::before {
+  opacity: 1;
 }
 
 .list {
@@ -71,18 +76,71 @@
   gap: 2px;
 }
 .name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 18px;
   letter-spacing: -0.02em;
 }
+.anchor,
+.optional {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px 3px 7px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-text);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.anchor {
+  background: var(--blue);
+  color: var(--white);
+}
+.anchor svg {
+  width: 13px;
+  height: 13px;
+}
+.optional {
+  padding-left: 9px;
+  box-shadow: inset 0 0 0 1px var(--steel-2);
+  color: var(--ash);
+}
+.row[data-optional] .seg {
+  opacity: 0.8;
+}
 .detail {
   min-height: 21px;
   font-size: 14px;
+  line-height: 1.45;
   color: var(--ash);
 }
-.detail[data-chosen] {
+.detail[data-tone="chosen"] {
   color: var(--porcelain);
+}
+.detail[data-tone="rule"] {
+  color: var(--warn);
+}
+.detail[data-tone="min"] {
+  color: var(--cyan);
+}
+.more {
+  justify-self: start;
+  min-height: 44px;
+  padding: 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cyan);
+}
+.rule {
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--steel);
+  font-size: 13px;
+  color: var(--ash);
 }
 
 /* Control segmentado de 4 niveles (el de la landing) */

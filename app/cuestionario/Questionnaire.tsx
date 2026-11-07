@@ -2,9 +2,16 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { PillButton } from "@/components/ui/Pill";
-import { AREA_LABELS, WEEKDAYS } from "@/content/labels";
-import { GOAL_TEXT_PLACEHOLDER, QUESTIONS, type Option, type Question } from "@/content/questionnaire";
+import { AGE_LABELS, AREA_LABELS, FREE_TIME_LABELS } from "@/content/labels";
+import {
+  GOAL_TEXT_PLACEHOLDER,
+  HEALTH_CONSENT_TEXT,
+  QUESTIONS,
+  type Option,
+  type Question,
+} from "@/content/questionnaire";
 import { isStepComplete, TOTAL_STEPS, type IntakeDraft } from "@/lib/domain/intake";
+import { weekRange, type ISODate } from "@/lib/domain/program";
 import { AREAS, type Wheel } from "@/lib/domain/types";
 import type { completeIntake, saveIntakeDraft } from "./actions";
 import s from "./cuestionario.module.css";
@@ -39,17 +46,20 @@ export function Questionnaire({
   userId,
   initialDraft,
   initialStep,
+  start,
   save,
   complete: completeAction,
 }: {
   userId: string;
+  /** Día 1 elegido: sirve para mostrar las fechas de cada semana. */
+  start: ISODate;
   initialDraft: IntakeDraft;
   initialStep: number;
   /** Server Actions (se pasan como props para poder previsualizar sin base de datos). */
   save: typeof saveIntakeDraft;
   complete: typeof completeIntake;
 }) {
-  const [draft, setDraft] = useState<IntakeDraft>({ reviewWeekday: 0, reviewTime: "19:00", ...initialDraft });
+  const [draft, setDraft] = useState<IntakeDraft>({ reminderTime: "20:00", ...initialDraft });
   const [step, setStep] = useState(initialStep);
   const [error, setError] = useState<string | null>(null);
   const [finishing, startFinishing] = useTransition();
@@ -89,7 +99,7 @@ export function Questionnaire({
 
   const question = QUESTIONS[step - 1];
   // En la rueda, los deslizadores empiezan en 5: cuentan como respuesta aunque no se toquen.
-  const withDefaults = (d: IntakeDraft): IntakeDraft => (step === 6 && !d.wheel ? { ...d, wheel: DEFAULT_WHEEL } : d);
+  const withDefaults = (d: IntakeDraft): IntakeDraft => (step === 5 && !d.wheel ? { ...d, wheel: DEFAULT_WHEEL } : d);
   const complete = isStepComplete(step, withDefaults(draft));
   const isLast = step === TOTAL_STEPS;
 
@@ -143,7 +153,7 @@ export function Questionnaire({
     });
   }
 
-  // El paso 6 empieza con todos los deslizadores en 5
+  // El paso 5 empieza con todos los deslizadores en 5
   const wheel = draft.wheel ?? DEFAULT_WHEEL;
 
   return (
@@ -186,6 +196,7 @@ export function Questionnaire({
             question={question}
             draft={draft}
             wheel={wheel}
+            start={start}
             onChange={update}
             onChoose={choose}
           />
@@ -202,7 +213,7 @@ export function Questionnaire({
             Atrás
           </PillButton>
           <PillButton type="submit" arrow disabled={!complete} loading={finishing}>
-            {isLast ? "Ver mi plan" : "Siguiente"}
+            {isLast ? "Crear mi plan" : "Siguiente"}
           </PillButton>
         </div>
       </form>
@@ -210,36 +221,74 @@ export function Questionnaire({
   );
 }
 
+const Tick = () => (
+  <span className={s.radio} aria-hidden="true">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3.5 8.5l3 3 6-7" />
+    </svg>
+  </span>
+);
+
+const toOptions = (labels: Record<string, string>): Option[] =>
+  Object.entries(labels).map(([value, label]) => ({ value, label }));
+
 function QuestionBody({
   question,
   draft,
   wheel,
+  start,
   onChange,
   onChoose,
 }: {
   question: Question;
   draft: IntakeDraft;
   wheel: Wheel;
+  start: ISODate;
   onChange: (patch: IntakeDraft) => void;
   onChoose: (field: keyof IntakeDraft, value: string) => void;
 }) {
   switch (question.kind) {
-    case "text":
+    case "identity":
       return (
-        <div className={s.field}>
-          <label htmlFor="q-name" className="sr-only">
-            {question.title}
+        <div className={s.stack}>
+          <div className={s.field}>
+            <label htmlFor="q-name" className="sr-only">
+              Tu nombre
+            </label>
+            <input
+              id="q-name"
+              className={s.input}
+              value={draft.name ?? ""}
+              onChange={(e) => onChange({ name: e.target.value })}
+              placeholder="Tu nombre o alias"
+              autoComplete="given-name"
+              maxLength={60}
+              autoFocus
+            />
+          </div>
+          <fieldset className={s.fieldset}>
+            <legend className={s.label}>¿Cuántos años tienes?</legend>
+            <Choices
+              options={toOptions(AGE_LABELS)}
+              value={draft.ageRange}
+              onSelect={(v) => onChange({ ageRange: v as IntakeDraft["ageRange"] })}
+              compact
+              ariaLabel="Edad"
+            />
+          </fieldset>
+          <label className={s.consent}>
+            <input
+              type="checkbox"
+              checked={Boolean(draft.healthConsent)}
+              onChange={(e) => onChange({ healthConsent: e.target.checked || undefined })}
+            />
+            <span className={s.consentBox} aria-hidden="true">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3.5 8.5l3 3 6-7" />
+              </svg>
+            </span>
+            <span>{HEALTH_CONSENT_TEXT}</span>
           </label>
-          <input
-            id="q-name"
-            className={s.input}
-            value={draft.name ?? ""}
-            onChange={(e) => onChange({ name: e.target.value })}
-            placeholder={question.placeholder}
-            autoComplete="given-name"
-            maxLength={60}
-            autoFocus
-          />
         </div>
       );
 
@@ -250,6 +299,32 @@ function QuestionBody({
           value={draft[question.field] as string | undefined}
           onSelect={(v) => onChoose(question.field, v)}
         />
+      );
+
+    case "freeTime":
+      return (
+        <div className={s.stack}>
+          <fieldset className={s.fieldset}>
+            <legend className={s.label}>Entre semana, al día</legend>
+            <Choices
+              options={question.options}
+              value={draft.freeTime}
+              onSelect={(v) => onChange({ freeTime: v as IntakeDraft["freeTime"] })}
+              compact
+              ariaLabel="Tiempo libre entre semana"
+            />
+          </fieldset>
+          <fieldset className={s.fieldset}>
+            <legend className={s.label}>El fin de semana, al día</legend>
+            <Choices
+              options={toOptions(FREE_TIME_LABELS)}
+              value={draft.freeTimeWeekend}
+              onSelect={(v) => onChange({ freeTimeWeekend: v as IntakeDraft["freeTimeWeekend"] })}
+              compact
+              ariaLabel="Tiempo libre el fin de semana"
+            />
+          </fieldset>
+        </div>
       );
 
     case "wheel":
@@ -306,40 +381,107 @@ function QuestionBody({
         </div>
       );
 
-    case "review":
+    case "critical": {
+      const weeks = draft.criticalWeeks;
+      const none = Array.isArray(weeks) && weeks.length === 0;
+      const toggle = (w: number) => {
+        const current = weeks ?? [];
+        const next = current.includes(w) ? current.filter((x) => x !== w) : [...current, w].sort();
+        onChange({ criticalWeeks: next });
+      };
+      return (
+        <div className={s.stack}>
+          <div className={s.weeks} role="group" aria-labelledby="q-title">
+            {[1, 2, 3, 4].map((w) => (
+              <button
+                key={w}
+                type="button"
+                role="checkbox"
+                aria-checked={Boolean(weeks?.includes(w))}
+                className={s.week}
+                onClick={() => toggle(w)}
+              >
+                <span className={s.weekText}>
+                  <span className={s.weekName}>Semana {w}</span>
+                  <span className={s.weekDates}>{weekRange(start, w)}</span>
+                </span>
+                <Tick />
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={none}
+            className={s.choice}
+            onClick={() => onChange({ criticalWeeks: none ? undefined : [] })}
+          >
+            <span>Ninguna, por ahora</span>
+            <Tick />
+          </button>
+          {weeks?.length ? (
+            <div className={s.field}>
+              <label htmlFor="q-critical" className={s.label}>
+                ¿Qué pasa esas semanas? (opcional)
+              </label>
+              <input
+                id="q-critical"
+                className={s.input}
+                value={draft.criticalNote ?? ""}
+                onChange={(e) => onChange({ criticalNote: e.target.value })}
+                placeholder="Exámenes, un viaje, turnos de noche…"
+                maxLength={200}
+              />
+            </div>
+          ) : null}
+        </div>
+      );
+    }
+
+    case "worthIt":
+      return (
+        <div className={s.field}>
+          <label htmlFor="q-worth" className="sr-only">
+            {question.title}
+          </label>
+          <textarea
+            id="q-worth"
+            className={`${s.input} ${s.textarea}`}
+            value={draft.worthIt ?? ""}
+            onChange={(e) => onChange({ worthIt: e.target.value })}
+            placeholder={question.placeholder}
+            maxLength={300}
+            rows={4}
+          />
+        </div>
+      );
+
+    case "final":
       return (
         <div className={s.stack}>
           <fieldset className={s.fieldset}>
-            <legend className={s.label}>Día de la semana</legend>
-            <div className={s.days} role="radiogroup" aria-label="Día de la semana">
-              {WEEKDAYS.map((d) => {
-                const checked = draft.reviewWeekday === d.value;
-                return (
-                  <button
-                    key={d.value}
-                    type="button"
-                    role="radio"
-                    aria-checked={checked}
-                    aria-label={d.label}
-                    className={s.day}
-                    onClick={() => onChange({ reviewWeekday: d.value })}
-                  >
-                    {d.short}
-                  </button>
-                );
-              })}
-            </div>
+            <legend className={s.label}>¿Quieres un compañero de compromiso dentro de la cohorte?</legend>
+            <p className={s.help}>Alguien que empieza cerca de tu fecha y con quien os avisáis si uno se descuelga.</p>
+            <Choices
+              options={[
+                { value: "yes", label: "Sí, me ayudaría" },
+                { value: "no", label: "Prefiero ir por mi cuenta" },
+              ]}
+              value={draft.wantsPartner === undefined ? undefined : draft.wantsPartner ? "yes" : "no"}
+              onSelect={(v) => onChange({ wantsPartner: v === "yes" })}
+              ariaLabel="Compañero de compromiso"
+            />
           </fieldset>
           <div className={s.field}>
             <label htmlFor="q-time" className={s.label}>
-              Hora
+              ¿A qué hora quieres tu recordatorio diario?
             </label>
             <input
               id="q-time"
               type="time"
               className={`${s.input} ${s.time}`}
-              value={draft.reviewTime ?? "19:00"}
-              onChange={(e) => onChange({ reviewTime: e.target.value })}
+              value={draft.reminderTime ?? "20:00"}
+              onChange={(e) => onChange({ reminderTime: e.target.value })}
               step={300}
             />
           </div>
@@ -353,11 +495,14 @@ function Choices({
   value,
   onSelect,
   compact,
+  ariaLabel,
 }: {
   options: Option[];
   value: string | undefined;
   onSelect: (value: string) => void;
   compact?: boolean;
+  /** Nombre del grupo cuando no es el título de la pregunta. */
+  ariaLabel?: string;
 }) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const selected = options.findIndex((o) => o.value === value);
@@ -374,7 +519,8 @@ function Choices({
     <div
       className={compact ? s.choicesCompact : s.choices}
       role="radiogroup"
-      aria-labelledby="q-title"
+      aria-labelledby={ariaLabel ? undefined : "q-title"}
+      aria-label={ariaLabel}
     >
       {options.map((o, i) => {
         const checked = o.value === value;

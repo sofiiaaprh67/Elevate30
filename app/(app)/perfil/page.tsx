@@ -6,12 +6,12 @@ import { getIntake, getPlan } from "@/lib/data/intake";
 import { getCheckins } from "@/lib/data/progress";
 import { FOUNDER_GOAL } from "@/lib/domain/calendar";
 import { toIntake } from "@/lib/domain/intake";
-import { todayInMadrid } from "@/lib/domain/program";
+import { dateForDay, formatLongDate, todayInMadrid, weekdayOf } from "@/lib/domain/program";
 import { daysDone, groupByDate } from "@/lib/domain/stats";
 import { getStartDate } from "@/lib/settings";
-import { updateReview } from "./actions";
+import { updateReminder } from "./actions";
 import { ProfileView } from "./ProfileView";
-import { ReviewForm } from "./ReviewForm";
+import { ReminderForm } from "./ReminderForm";
 import pf from "./perfil.module.css";
 
 export const metadata: Metadata = { title: "Perfil" };
@@ -36,7 +36,12 @@ export default async function PerfilPage() {
       isFounder={isFounder}
       intake={intake}
       plan={plan}
-      reviewForm={<ReviewForm weekday={intake.reviewWeekday} time={intake.reviewTime} action={updateReview} />}
+      program={{
+        startText: formatLongDate(start),
+        reviewWeekday: weekdayOf(dateForDay(start, 7)),
+        canChangeDate: start > todayInMadrid(),
+      }}
+      reminderForm={<ReminderForm time={intake.reminderTime} action={updateReminder} />}
       signOut={
         <form action={signOut}>
           <button type="submit" className={pf.signOut}>

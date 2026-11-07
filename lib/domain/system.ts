@@ -5,6 +5,8 @@
  */
 import { WEEKDAY_PLURAL } from "@/content/labels";
 import { PLAN_90_OPTIONS } from "@/content/lessons";
+import { dateForDay, weekdayOf, type ISODate } from "./program";
+import { lowerFirst } from "./stats";
 import type { Intake, Plan, Slot } from "./types";
 import { SLOTS } from "./types";
 
@@ -32,12 +34,18 @@ export function buildSystem({
   intake,
   plan,
   currentDay,
+  start,
+  anchor,
 }: {
   entries: SystemEntry[];
+  /** Día 1 de la persona: de él sale el día de sus revisiones. */
+  start: ISODate;
   intake: Intake;
   plan: Plan;
   /** Día del programa (0 antes de empezar, 31 al terminar). */
   currentDay: number;
+  /** Hábito ancla de la persona. */
+  anchor?: Slot | null;
 }): SystemPiece[] {
   const lesson = (day: number) => entries.find((e) => e.kind === "lesson" && e.day === day)?.data ?? {};
   const piece = (
@@ -55,6 +63,7 @@ export function buildSystem({
   const d1 = lesson(1);
   const d3 = lesson(3);
   const d6 = lesson(6);
+  const d8 = lesson(8);
   const d16 = lesson(16);
   const d20 = lesson(20);
   const d22 = lesson(22);
@@ -65,10 +74,27 @@ export function buildSystem({
 
   const ifThen = (slot: Slot) => text(d6[slot]);
 
+  // Plan de días malos (día 8) ampliado con el plan de vuelta (día 24)
+  const badDays = piece("bad_days", "Tu plan para los días malos", 8, [
+    { label: "Cómo lo reconoces", text: text(d8.signal) },
+    { label: "Lo que te puede sacar del plan", text: text(d8.obstacle) },
+    { label: "Lo que harás", text: text(d8.plan) },
+  ]);
+  const comeback = [
+    { label: "Si te sales varios días", text: text(d24.trigger) },
+    { label: "Con qué nivel vuelves", text: text(d24.level) },
+    { label: "Cuándo vuelves", text: text(d24.when) },
+  ].filter((i) => i.text);
+  if (comeback.length) {
+    badDays.status = "done";
+    badDays.items = [...badDays.items.filter((i) => i.text), ...comeback];
+  }
+
   return [
     piece("why", "Tu porqué", 1, [
       { label: "Lo que quieres que cambie", text: text(d1.change) },
       { label: "Por qué te importa", text: text(d1.why) },
+      { label: "Merecerá la pena si…", text: intake.worthIt ?? "" },
     ]),
     piece(
       "goal",
@@ -82,35 +108,34 @@ export function buildSystem({
     ),
     piece(
       "habits",
-      "Tus hábitos y cuándo los haces",
+      "Tus hábitos, cuándo los haces y tu ancla",
       6,
-      SLOTS.map((slot) => ({
-        label: plan[slot].name,
-        text: ifThen(slot) || plan[slot].schedule,
-      })),
+      [
+        ...SLOTS.map((slot) => ({
+          label: anchor === slot ? `${plan[slot].name} (tu ancla)` : plan[slot].name,
+          text: ifThen(slot) || plan[slot].schedule,
+        })),
+        ...(anchor ? [{ label: "En tu peor día", text: `Solo tu ancla: ${lowerFirst(plan[anchor].levels.min)}` }] : []),
+      ],
       true,
     ),
-    piece("bad_days", "Tu plan para los días malos", 16, [
-      { label: "Cómo lo reconoces", text: text(d16.signal) },
-      { label: "Lo que te puede sacar del plan", text: text(d16.obstacle) },
-      { label: "Lo que harás", text: text(d16.plan) },
+    badDays,
+    piece("hard_week", "Tu modo semana difícil", 16, [
+      { label: "Semanas que ves venir", text: text(d16.when) },
+      { label: "Lo que mantienes sí o sí", text: text(d16.keep) },
+      { label: "Lo que pausas sin culpa", text: text(d16.pause) },
     ]),
     piece("shutdown", "Tu cierre del día", 20, [
       { label: "Hora de cierre", text: text(d20.time) },
       { label: "Ritual", text: text(d20.ritual) },
     ]),
     piece("identity", "Quién eres", 22, [{ label: "Soy una persona que…", text: text(d22.identity) }]),
-    piece("hard_week", "Tu modo semana difícil", 24, [
-      { label: "Semanas que ves venir", text: text(d24.when) },
-      { label: "Lo que mantienes sí o sí", text: text(d24.keep) },
-      { label: "Lo que pausas sin culpa", text: text(d24.pause) },
-    ]),
     piece("wins", "Tus victorias", 25, [{ label: "Lo que has construido", text: text(d25.wins) }]),
     piece(
       "review",
       "Tu revisión semanal",
       27,
-      [{ label: "Cuándo", text: `Los ${WEEKDAY_PLURAL[intake.reviewWeekday]} a las ${intake.reviewTime}` }],
+      [{ label: "Cuándo", text: `Los ${WEEKDAY_PLURAL[weekdayOf(dateForDay(start, 7))]}, durante unos 5 minutos` }],
       true,
     ),
     piece("letter", "Tu carta al día 1", 29, [{ label: "Carta", text: text(letter.text) }]),

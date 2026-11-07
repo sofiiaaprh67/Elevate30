@@ -1,13 +1,15 @@
 /**
- * Las 30 lecciones de ELEVATE 30.
+ * Las 30 lecciones de ELEVATE 30 (v2).
  * Edita aquí los textos. `videoUrl` es opcional: cuando lo rellenes,
- * la lección mostrará el vídeo.
+ * la lección mostrará el vídeo. Cada lección se lee en 2 minutos como máximo.
  *
  * Cada lección tiene:
  * - text: la idea principal (1–2 frases)
  * - body: el desarrollo (párrafos cortos)
  * - steps: cómo aplicarlo hoy, en orden
- * - science: por qué funciona, con su fuente (opcional)
+ * - basis: en qué se apoya. Solo es "study" (Por qué funciona) si hay un
+ *   estudio verificado, con su enlace. Si no, es "practice" (herramienta
+ *   práctica) y no se presenta como ciencia.
  * - action: lo que la persona hace hoy
  *
  * action.kind:
@@ -41,18 +43,40 @@ export type LessonAction =
       options: { value: string; label: string; detail: string }[];
     };
 
+export type LessonBasis =
+  | { kind: "study"; text: string; source: string; url: string }
+  | { kind: "practice"; text: string };
+
 export type Lesson = {
   day: number;
   title: string;
   text: string;
   body: string[];
   steps: string[];
-  science?: { text: string; source: string };
+  basis?: LessonBasis;
   action: LessonAction;
   videoUrl?: string;
 };
 
 const check = (text: string): LessonAction => ({ kind: "check", text });
+const practice = (text: string): LessonBasis => ({ kind: "practice", text });
+
+/** Estudios verificados (consultados el 7 de noviembre de 2026). */
+const STUDIES = {
+  lally: { source: "Lally y otros, University College London, 2010", url: "https://doi.org/10.1002/ejsp.674" },
+  freshStart: { source: "Dai, Milkman y Riis, Management Science, 2014", url: "https://doi.org/10.1287/mnsc.2014.1901" },
+  ifThen: {
+    source: "Gollwitzer y Sheeran, metaanálisis, 2006",
+    url: "https://doi.org/10.1016/S0065-2601(06)38002-1",
+  },
+  selfCompassion: {
+    source: "Breines y Chen, Personality and Social Psychology Bulletin, 2012",
+    url: "https://doi.org/10.1177/0146167212445599",
+  },
+  sighing: { source: "Balban y otros, Cell Reports Medicine, 2023", url: "https://doi.org/10.1016/j.xcrm.2022.100895" },
+} as const;
+
+const study = (key: keyof typeof STUDIES, text: string): LessonBasis => ({ kind: "study", text, ...STUDIES[key] });
 
 /** Opciones del día 30. */
 export const PLAN_90_OPTIONS = [
@@ -80,18 +104,18 @@ export const LESSONS: Lesson[] = [
     title: "La última vez que empiezas de cero",
     text: "Cada lunes y cada enero, muchísima gente decide cambiar. La mayoría lo deja a las pocas semanas, y no por falta de ganas: le falta un sistema que aguante cuando las ganas se acaban.",
     body: [
-      "ELEVATE 30 no va de hacerlo todo perfecto. Durante 30 días vas a construir ese sistema con un método de cuatro pasos: decidir, cumplir, revisar y repetir. Cada día tendrás una lección corta, una acción concreta y tus 3 hábitos.",
-      "La regla más importante es sencilla: el día no se deja en blanco. Si solo te da para el mínimo, haces el mínimo.",
+      "Durante 30 días vas a construir ese sistema con un método de cuatro pasos: decidir, cumplir, revisar y repetir. Cada día, una lección corta, una acción concreta y tus 3 hábitos.",
+      "La regla es sencilla: nunca dos días seguidos en blanco. Si solo te da para el mínimo, haces el mínimo.",
     ],
     steps: [
       "Instala la app en tu pantalla de inicio desde Perfil.",
       "Elige un momento fijo para tu check-in, por ejemplo al lavarte los dientes por la noche.",
       "Escribe abajo por qué estás aquí. Lo volverás a leer el día 29.",
     ],
-    science: {
-      text: "Las fechas que suenan a comienzo, como un lunes o un año nuevo, disparan las ganas de cambiar. Es el «efecto nuevo comienzo», y ese impulso dura poco si no se convierte en rutina.",
-      source: "Dai, Milkman y Riis, 2014",
-    },
+    basis: study(
+      "freshStart",
+      "Las fechas que suenan a comienzo, como un lunes o un año nuevo, disparan las ganas de empezar. Es el «efecto nuevo comienzo». Ese impulso dura poco si no se convierte en rutina: por eso hoy empiezas un sistema, no un propósito.",
+    ),
     action: {
       kind: "form",
       text: "Escribe tu porqué.",
@@ -113,10 +137,9 @@ export const LESSONS: Lesson[] = [
       "Fíjate en tus 2 áreas más bajas. Te las recordamos aquí abajo.",
       "Pregúntate cuál de las dos, si mejorara, arrastraría a las demás.",
     ],
-    science: {
-      text: "Hay hábitos «clave» que arrastran a otros: quien empieza a hacer ejercicio con regularidad suele acabar comiendo mejor y rindiendo más sin habérselo propuesto.",
-      source: "Charles Duhigg, El poder de los hábitos, 2012",
-    },
+    basis: practice(
+      "La rueda de la vida es una herramienta de coaching: no es un test, es una foto de cómo estás hoy para decidir por dónde empezar.",
+    ),
     action: check("Elige cuál de tus 2 áreas más bajas tendría más efecto dominó si mejorara."),
   },
   {
@@ -125,17 +148,14 @@ export const LESSONS: Lesson[] = [
     text: "Querer mejorar en todo a la vez es la forma más rápida de no mejorar en nada. Un objetivo concreto te dice cada día hacia dónde ir.",
     body: [
       "«Ponerme en forma» o «ser más productivo» no se pueden cumplir, porque nunca sabes cuándo lo has conseguido. Un buen objetivo tiene tres partes: qué, cuánto y para cuándo.",
-      "En 30 días no vas a cambiar tu vida entera, pero sí puedes dar un paso visible hacia lo que quieres. Elige ese paso.",
+      "En 30 días no vas a cambiar tu vida entera, pero sí puedes dar un paso visible. Elige ese paso.",
     ],
     steps: [
       "Escribe tu objetivo con un número y una fecha.",
-      "Si es muy grande, quédate con la parte que puedes conseguir en estos 30 días.",
+      "Si es muy grande, quédate con la parte que cabe en estos 30 días.",
       "Decide qué señal te dirá el día 30 que vas por buen camino.",
     ],
-    science: {
-      text: "Cientos de estudios muestran que los objetivos concretos y exigentes llevan a mejores resultados que el clásico «haz lo que puedas».",
-      source: "Locke y Latham, teoría del establecimiento de metas, 2002",
-    },
+    basis: practice("Qué, cuánto y para cuándo: así un deseo se convierte en algo que puedes revisar cada semana."),
     action: {
       kind: "form",
       text: "Concreta tu objetivo.",
@@ -159,36 +179,35 @@ export const LESSONS: Lesson[] = [
     text: "Tu objetivo es el resultado; tus hábitos son lo que haces cada día para llegar. El resultado no lo controlas del todo. Lo que haces hoy, sí.",
     body: [
       "Por eso en ELEVATE mides tus hábitos y no tu objetivo. Si cumples los hábitos, el resultado acaba llegando. Si solo miras el resultado, te frustras los días en que no se mueve.",
-      "Tus 3 hábitos cubren tu cuerpo, tu mente y tu objetivo. Están elegidos a partir de tus respuestas, pero tú conoces tu vida mejor que nadie.",
+      "Hoy es el último día para cambiar un hábito de cuerpo o de mente. Y es buen momento para confirmar tu ancla: el que mantendrías en tu peor día.",
     ],
     steps: [
       "Abre tu plan y lee el motivo de cada hábito.",
-      "Si uno no encaja con tu vida real, cámbialo ahora: mejor hoy que el día 12.",
-      "Comprueba que el hábito del objetivo te acerca de verdad a lo que escribiste ayer.",
+      "Si uno no encaja con tu vida real, cámbialo hoy.",
+      "Confirma tu ancla, o cámbiala si ahora lo ves de otra forma.",
     ],
-    science: {
-      text: "Los equipos que se centran en las acciones que controlan cada semana, y no solo en el resultado final, cumplen más sus objetivos.",
-      source: "McChesney, Covey y Huling, Las 4 disciplinas de la ejecución, 2012",
-    },
-    action: check("Revisa tus 3 hábitos en tu plan y cambia el que no encaje."),
+    basis: practice(
+      "Medir lo que haces cada día, y no solo el resultado final, te deja ajustar a tiempo en lugar de enterarte al final.",
+    ),
+    action: check("Revisa tus 3 hábitos, cambia el que no encaje y confirma tu ancla."),
   },
   {
     day: 5,
     title: "Los 3 niveles: completo, medio y mínimo",
     text: "No todos los días tienes la misma energía. Con tres niveles siempre hay una versión del hábito que sí puedes cumplir.",
     body: [
-      "Completo es para los días buenos, medio para los normales y mínimo para los días malos. El mínimo no es hacer trampa: es lo que mantiene vivo el hábito cuando todo lo demás falla.",
-      "Un buen mínimo tiene que parecer casi ridículo. Si te da pereza solo de pensarlo, es demasiado grande.",
+      "Completo es para los días buenos, medio para los normales y mínimo para los malos. El mínimo no es hacer trampa: es lo que mantiene vivo el hábito cuando todo lo demás falla.",
+      "Un buen mínimo dura 2 minutos o menos y consiste en empezar. Si te da pereza solo de pensarlo, es demasiado grande.",
     ],
     steps: [
       "Lee los tres niveles de cada hábito.",
       "Pregúntate si podrías hacer el mínimo con exámenes, con fiebre o llegando a casa a las once.",
       "Hoy haz los 3 hábitos en mínimo, solo para comprobar lo fácil que es.",
     ],
-    science: {
-      text: "Cuando la motivación baja, una conducta solo ocurre si es muy fácil de hacer. Por eso los hábitos diminutos sobreviven a los días malos.",
-      source: "BJ Fogg, Tiny Habits, 2019",
-    },
+    basis: study(
+      "lally",
+      "En el estudio de la UCL, los hábitos se fueron volviendo automáticos al repetirlos en el mismo contexto. Lo que contaba era repetir, no la intensidad: un mínimo repetido construye más que un esfuerzo heroico aislado.",
+    ),
     action: check("Haz hoy tus 3 hábitos, al menos en mínimo, y registra el check-in."),
   },
   {
@@ -196,7 +215,7 @@ export const LESSONS: Lesson[] = [
     title: "Cuándo y dónde: tu plan si-entonces",
     text: "Un hábito sin hora es solo una intención. Decidir antes cuándo y dónde lo harás te ahorra tener que decidirlo cada día.",
     body: [
-      "La fórmula es sencilla: «Cuando [momento y lugar], haré [hábito]». Cuanto más concreto sea el momento, mejor: «al llegar a casa y dejar la mochila» funciona mejor que «por la tarde».",
+      "La fórmula es sencilla: «Cuando [momento y lugar], haré [hábito]». Cuanto más concreto, mejor: «al llegar a casa y dejar la mochila» funciona mejor que «por la tarde».",
       "Con el plan escrito, ese momento se convierte en el aviso. Ya no dependes de acordarte ni de tener ganas.",
     ],
     steps: [
@@ -204,10 +223,10 @@ export const LESSONS: Lesson[] = [
       "Escribe el plan con la fórmula «Cuando…, haré…».",
       "Ponlo en tu calendario o en una alarma con ese mismo texto.",
     ],
-    science: {
-      text: "En un análisis de 94 estudios, formular planes «si-entonces» aumentó de forma clara las probabilidades de cumplir un objetivo.",
-      source: "Gollwitzer y Sheeran, 2006",
-    },
+    basis: study(
+      "ifThen",
+      "Los planes «si-entonces» ayudan a pasar de la intención a la acción. Los análisis que reúnen muchos estudios encuentran un efecto real, aunque más modesto de lo que se creía: ayudan, no hacen magia.",
+    ),
     action: {
       kind: "form",
       text: "Escribe tu plan si-entonces para cada hábito.",
@@ -223,187 +242,34 @@ export const LESSONS: Lesson[] = [
     title: "Revisión 1: tu punto de partida",
     text: "Llevas una semana decidiendo. Antes de empezar a cumplir en serio, toca mirar qué has aprendido de ti.",
     body: [
-      "Revisar no es juzgarte. Es mirar tus datos como lo haría un buen entrenador: qué ha salido, qué no y qué cambias. Diez minutos a la semana bastan.",
+      "Revisar no es juzgarte. Es mirar tus datos como lo haría un buen entrenador: qué ha salido, qué no y qué cambias. Cinco minutos bastan.",
     ],
     steps: [
       "Mira tus check-ins de la semana en la revisión de abajo.",
       "Responde a las tres preguntas sin pensarlo demasiado.",
       "Decide qué haces con cada hábito: mantener, bajar o subir.",
     ],
-    science: {
-      text: "En un estudio con trabajadores en formación, quienes dedicaban 15 minutos al final del día a pensar en lo aprendido rindieron más de un 20 % mejor que quienes no lo hacían.",
-      source: "Di Stefano, Gino, Pisano y Staats, 2014",
-    },
     action: check("Haz tu primera revisión semanal."),
   },
 
   // ---------------------------------------------------------------- CUMPLIR
   {
     day: 8,
-    title: "Empezar en mínimo también cuenta",
-    text: "Hoy empieza la fase de cumplir. La meta de esta semana no es hacerlo perfecto, sino no dejar ningún día en blanco.",
+    title: "Cuando fallas un día (y pasará)",
+    text: "Vas a fallar algún día: no es una posibilidad, es parte del plan. Lo que decide si sigues no es el fallo, sino lo que te dices después.",
     body: [
-      "Lo más difícil de un hábito es empezar. Cuando ya te has puesto las zapatillas o has abierto el documento, seguir cuesta mucho menos. Por eso funciona el mínimo: te pone en marcha.",
-      "Si un día haces el mínimo y te apetece seguir, sigue. Si no, ya has cumplido.",
-    ],
-    steps: [
-      "Haz cada hábito en el momento que decidiste en tu plan si-entonces.",
-      "Empieza siempre por el mínimo y decide si subes cuando ya estés en marcha.",
-      "Registra el check-in en cuanto termines, no al final del día.",
-    ],
-    science: {
-      text: "Los hábitos se automatizan al repetirlos en el mismo contexto, y las primeras repeticiones son las que más hacen avanzar ese proceso.",
-      source: "Lally y otros, University College London, 2010",
-    },
-    action: check("Haz tus 3 hábitos al nivel que puedas y registra el check-in."),
-  },
-  {
-    day: 9,
-    title: "Planifica tu día en 5 minutos",
-    text: "Quien avanza no tiene más tiempo: tiene claro qué es lo importante antes de que empiece el día.",
-    body: [
-      "Cinco minutos la noche anterior te ahorran una mañana de dudas y de mirar el móvil sin saber por dónde empezar. Además, escribir lo pendiente libera la cabeza para descansar.",
-    ],
-    steps: [
-      "Esta noche, escribe las 3 prioridades de mañana. Solo 3.",
-      "Ponles hora en tu calendario, empezando por la más importante.",
-      "Haz que el bloque de tu objetivo sea una de ellas.",
-    ],
-    science: {
-      text: "Hacer un plan concreto para las tareas pendientes reduce los pensamientos que te asaltan sobre ellas, aunque todavía no las hayas hecho.",
-      source: "Masicampo y Baumeister, 2011",
-    },
-    action: check("Escribe esta noche las 3 prioridades de mañana y dales hora."),
-  },
-  {
-    day: 10,
-    title: "Diseña tu entorno",
-    text: "La fuerza de voluntad se gasta; el entorno no. Haz que lo bueno sea fácil y que lo que te frena sea incómodo.",
-    body: [
-      "Gran parte de lo que haces cada día lo haces en piloto automático, guiado por lo que tienes delante. Si el móvil está en la mesa, lo miras. Si las zapatillas están junto a la puerta, sales.",
-      "No hace falta cambiar tu casa entera. Un cambio pequeño en el sitio correcto vale más que mucha disciplina.",
-    ],
-    steps: [
-      "Haz visible la señal de un hábito: el libro en la almohada o la botella de agua en la mesa.",
-      "Quita pasos: deja preparada la ropa, la mochila o el documento abierto.",
-      "Pon trabas a lo que te distrae: el móvil en otra habitación mientras trabajas en tu objetivo.",
-    ],
-    science: {
-      text: "Cerca del 43 % de lo que hacemos a diario lo repetimos casi sin pensar, en el mismo sitio y momento. Y basta con tener el móvil a la vista, boca abajo y en silencio, para rendir peor en tareas que exigen concentración.",
-      source: "Wood, Quinn y Kashy, 2002; Ward y otros, 2017",
-    },
-    action: check("Haz hoy un cambio en tu entorno que te facilite un hábito mañana."),
-  },
-  {
-    day: 11,
-    title: "Moverse con la agenda llena",
-    text: "No necesitas una hora de gimnasio para cuidar tu cuerpo. Moverte un poco cada día suma más que entrenar fuerte una vez y abandonar.",
-    body: [
-      "Todo movimiento cuenta: ir andando a clase, subir escaleras o hacer una llamada caminando. Los minutos sueltos también se suman.",
-      "Si tu hábito es entrenar, los días sin tiempo no son días perdidos: son días de nivel medio o mínimo.",
-    ],
-    steps: [
-      "Busca 2 momentos de tu día en los que podrías moverte: trayectos, llamadas o descansos.",
-      "Haz tu sesión al nivel que te permita el día.",
-      "Si pasas muchas horas sentado, levántate 2 o 3 minutos cada hora.",
-    ],
-    science: {
-      text: "La OMS recomienda entre 150 y 300 minutos de actividad moderada a la semana y deja claro que cualquier cantidad cuenta, por corta que sea.",
-      source: "Organización Mundial de la Salud, 2020",
-    },
-    action: check("Haz hoy una sesión de movimiento, aunque sea corta."),
-  },
-  {
-    day: 12,
-    title: "Dormir es parte del plan",
-    text: "Dormir mal te quita energía, concentración y ganas. Ser ambicioso también es proteger tu descanso.",
-    body: [
-      "Lo que más ayuda no es dormir mucho un día, sino tener horarios parecidos todos los días. Tu cuerpo funciona con un reloj interno, y los cambios constantes lo desajustan.",
-    ],
-    steps: [
-      "Fija una hora de despertar y mantenla también el fin de semana, con una hora de margen como mucho.",
-      "Toma el último café antes de las 15:00: la cafeína tarda horas en irse del cuerpo.",
-      "Baja las luces y deja las pantallas 30 minutos antes de dormir.",
-    ],
-    science: {
-      text: "Los adultos necesitan dormir 7 horas o más de forma habitual. Dormir menos se asocia a peor rendimiento, más errores y peor estado de ánimo.",
-      source: "Academia Americana de Medicina del Sueño, 2015",
-    },
-    action: check("Fija tu hora de desconexión y cúmplela esta noche."),
-  },
-  {
-    day: 13,
-    title: "Comer para rendir, sin dietas",
-    text: "No hace falta una dieta para comer mejor. Una mejora pequeña que mantienes cambia más que un plan perfecto que dura una semana.",
-    body: [
-      "Empieza por añadir, no por prohibir. Añadir verdura, proteína o agua es mucho más fácil de mantener que quitarte lo que te gusta.",
-    ],
-    steps: [
-      "Usa el método del plato en una comida: la mitad verdura o fruta, un cuarto proteína y un cuarto hidratos, mejor integrales.",
-      "Ten algo saludable a mano para cuando te entre hambre entre horas.",
-      "Bebe agua con cada comida.",
-    ],
-    science: {
-      text: "El plato saludable de Harvard resume lo que dice la evidencia sobre una comida equilibrada, sin contar calorías.",
-      source: "Escuela de Salud Pública de Harvard",
-    },
-    action: check("Haz hoy una de tus comidas con el método del plato."),
-  },
-  {
-    day: 14,
-    title: "Revisión 2: lo que dicen tus datos",
-    text: "Dos semanas. Tus check-ins ya cuentan una historia: qué hábito sale solo y cuál necesita ayuda.",
-    body: [
-      "Cuando un hábito no sale, casi nunca es por falta de fuerza de voluntad. Suele fallar una de estas tres cosas: la señal (no te acuerdas), la dificultad (es demasiado grande) o las ganas (no te importa lo suficiente).",
-    ],
-    steps: [
-      "Mira en la revisión de abajo cuál es tu hábito con peores datos.",
-      "Averigua qué falla: la señal, la dificultad o las ganas.",
-      "Arregla primero la señal o la dificultad: son las más fáciles de cambiar.",
-    ],
-    science: {
-      text: "Para que una conducta ocurra hacen falta tres cosas a la vez: motivación, capacidad y una señal que la dispare. Si falta una, no ocurre.",
-      source: "Modelo de conducta de BJ Fogg",
-    },
-    action: check("Haz tu revisión semanal."),
-  },
-
-  // ---------------------------------------------------------------- REVISAR
-  {
-    day: 15,
-    title: "Mitad del camino",
-    text: "Llevas 15 días construyendo. Compararte con tu punto de partida es la mejor forma de ver un progreso que en el día a día no se nota.",
-    body: [
-      "Puede que alguna nota haya subido y otra no. Es normal: los hábitos cambian primero lo que haces y después cómo te sientes.",
-    ],
-    steps: [
-      "Vuelve a puntuar tu rueda pensando en cómo estás hoy.",
-      "Compara con la marca fina, que es tu nota del día 1.",
-      "Quédate con un área que haya subido y piensa qué la ha movido.",
-    ],
-    science: {
-      text: "Un análisis de 138 estudios concluyó que controlar tu progreso aumenta las probabilidades de conseguir lo que te propones, sobre todo si lo apuntas.",
-      source: "Harkin y otros, 2016",
-    },
-    action: { kind: "wheel", text: "Vuelve a puntuar tu rueda de la vida." },
-  },
-  {
-    day: 16,
-    title: "Qué hacer cuando fallas un día",
-    text: "Fallar un día no rompe nada. Lo que rompe un hábito es pensar que, como ya has fallado, ya da igual.",
-    body: [
-      "Ese «ya da igual» le pasa a todo el mundo: después de saltarte algo una vez, es muy fácil abandonar del todo. La regla de ELEVATE lo corta de raíz: nunca dos días seguidos sin nada.",
-      "Hoy vas a dejar escrito qué harás en tus días malos, ahora que tienes la cabeza fría.",
+      "Después de saltarte algo es muy fácil pensar «ya da igual» y abandonar. La regla de ELEVATE lo corta de raíz: nunca dos días seguidos sin nada. Si un hábito tuvo «hoy no», al día siguiente toca al menos su mínimo.",
+      "Hablarte como le hablarías a un amigo no te hace blando: te ayuda a volver antes. Hoy dejas escrito qué harás en tus días malos, ahora que tienes la cabeza fría.",
     ],
     steps: [
       "Piensa en tu último día malo: ¿cómo te diste cuenta de que lo era?",
       "Escribe qué es lo más probable que te saque del plan.",
       "Decide qué harás cuando pase, con la fórmula «Si…, entonces…».",
     ],
-    science: {
-      text: "En el estudio más citado sobre la formación de hábitos, saltarse un día suelto no afectó al resultado. Lo que cuenta es volver al día siguiente.",
-      source: "Lally y otros, 2010",
-    },
+    basis: study(
+      "selfCompassion",
+      "Las personas que se trataron con comprensión después de un fallo se esforzaron más por mejorar que las que se criticaron.",
+    ),
     action: {
       kind: "form",
       text: "Escribe tu plan para los días malos.",
@@ -421,8 +287,142 @@ export const LESSONS: Lesson[] = [
         {
           key: "plan",
           label: "Tu plan: «Si…, entonces…»",
-          placeholder: "Si llego a casa sin energía, entonces haré el mínimo de mis 3 hábitos antes de cenar.",
+          placeholder: "Si llego a casa sin energía, entonces haré el mínimo de mi ancla antes de cenar.",
         },
+      ],
+    },
+  },
+  {
+    day: 9,
+    title: "Planifica tu día en 5 minutos",
+    text: "Quien avanza no tiene más tiempo: tiene claro qué es lo importante antes de que empiece el día.",
+    body: [
+      "Cinco minutos la noche anterior te ahorran una mañana de dudas y de mirar el móvil sin saber por dónde empezar. Además, escribir lo pendiente libera la cabeza para descansar.",
+    ],
+    steps: [
+      "Esta noche, escribe las 3 prioridades de mañana. Solo 3.",
+      "Ponles hora en tu calendario, empezando por la más importante.",
+      "Haz que el bloque de tu objetivo sea una de ellas.",
+    ],
+    basis: practice("Tres prioridades con hora: si todo es importante, nada lo es."),
+    action: check("Escribe esta noche las 3 prioridades de mañana y dales hora."),
+  },
+  {
+    day: 10,
+    title: "Diseña tu entorno",
+    text: "La fuerza de voluntad se gasta; el entorno no. Haz que lo bueno sea fácil y que lo que te frena sea incómodo.",
+    body: [
+      "Mucho de lo que haces cada día lo haces en piloto automático, guiado por lo que tienes delante. Si el móvil está en la mesa, lo miras. Si las zapatillas están junto a la puerta, sales.",
+      "Un cambio pequeño en el sitio correcto vale más que mucha disciplina.",
+    ],
+    steps: [
+      "Haz visible la señal de un hábito: el libro en la almohada o la botella de agua en la mesa.",
+      "Quita pasos: deja preparada la ropa, la mochila o el documento abierto.",
+      "Pon trabas a lo que te distrae: el móvil en otra habitación mientras trabajas en tu objetivo.",
+    ],
+    basis: practice("Más fácil lo que quieres hacer, más difícil lo que quieres evitar: dos cambios, cero fuerza de voluntad."),
+    action: check("Haz hoy un cambio en tu entorno que te facilite un hábito mañana."),
+  },
+  {
+    day: 11,
+    title: "Moverse con la agenda llena",
+    text: "No necesitas una hora de gimnasio para cuidar tu cuerpo. Moverte un poco cada día suma más que entrenar fuerte una vez y abandonar.",
+    body: [
+      "Todo movimiento cuenta: ir andando a clase, subir escaleras o hacer una llamada caminando. Los minutos sueltos también suman.",
+      "Si tu hábito es entrenar, los días sin tiempo no son días perdidos: son días de nivel medio o mínimo.",
+    ],
+    steps: [
+      "Busca 2 momentos de tu día en los que podrías moverte: trayectos, llamadas o descansos.",
+      "Haz tu sesión al nivel que te permita el día.",
+      "Si pasas muchas horas sentado, levántate 2 o 3 minutos cada hora.",
+    ],
+    basis: practice("Moverte poco y a menudo es más fácil de mantener que entrenar mucho de vez en cuando."),
+    action: check("Haz hoy una sesión de movimiento, aunque sea corta."),
+  },
+  {
+    day: 12,
+    title: "Dormir es parte del plan",
+    text: "Dormir mal te quita energía, concentración y ganas. Ser ambicioso también es proteger tu descanso.",
+    body: [
+      "Lo que más ayuda no es dormir mucho un día, sino tener horarios parecidos todos los días. Tu cuerpo funciona con un reloj interno, y los cambios constantes lo desajustan.",
+    ],
+    steps: [
+      "Fija una hora de despertar y mantenla también el fin de semana, con una hora de margen como mucho.",
+      "Toma el último café a primera hora de la tarde.",
+      "Baja las luces y deja las pantallas un rato antes de dormir.",
+    ],
+    basis: practice("Horarios parecidos cada día, luz por la mañana y menos pantallas por la noche: lo básico que casi siempre ayuda."),
+    action: check("Fija tu hora de desconexión y cúmplela esta noche."),
+  },
+  {
+    day: 13,
+    title: "Comer para rendir, sin dietas",
+    text: "No hace falta una dieta para comer mejor. Una mejora pequeña que mantienes cambia más que un plan perfecto que dura una semana.",
+    body: [
+      "Empieza por añadir, no por prohibir. Añadir verdura, proteína o agua es mucho más fácil de mantener que quitarte lo que te gusta. Aquí no hay pesos ni calorías: solo comidas que te ayudan a rendir.",
+    ],
+    steps: [
+      "Usa el método del plato en una comida: la mitad verdura o fruta, un cuarto proteína y un cuarto hidratos, mejor integrales.",
+      "Ten algo saludable a mano para cuando te entre hambre entre horas.",
+      "Bebe agua con cada comida.",
+    ],
+    basis: practice(
+      "El método del plato es una guía de alimentación, no un estudio: una forma sencilla de equilibrar una comida sin contar nada.",
+    ),
+    action: check("Haz hoy una de tus comidas con el método del plato."),
+  },
+  {
+    day: 14,
+    title: "Revisión 2: lo que dicen tus datos",
+    text: "Dos semanas. Tus check-ins ya cuentan una historia: qué hábito sale solo y cuál necesita ayuda.",
+    body: [
+      "Cuando un hábito no sale, casi nunca es por falta de fuerza de voluntad. Suele fallar una de tres cosas: la señal (no te acuerdas), la dificultad (es demasiado grande) o las ganas (no te importa lo suficiente).",
+    ],
+    steps: [
+      "Mira en la revisión de abajo cuál es tu hábito con peores datos.",
+      "Averigua qué falla: la señal, la dificultad o las ganas.",
+      "Arregla primero la señal o la dificultad: son las más fáciles de cambiar.",
+    ],
+    basis: practice("Señal, dificultad y ganas: si falta una, el hábito no ocurre. Empieza por las dos primeras."),
+    action: check("Haz tu revisión semanal."),
+  },
+
+  // ---------------------------------------------------------------- REVISAR
+  {
+    day: 15,
+    title: "Mitad del camino",
+    text: "Llevas 15 días construyendo. Compararte con tu punto de partida es la mejor forma de ver un progreso que en el día a día no se nota.",
+    body: [
+      "Puede que alguna nota haya subido y otra no. Es normal: los hábitos cambian primero lo que haces y después cómo te sientes.",
+    ],
+    steps: [
+      "Vuelve a puntuar tu rueda pensando en cómo estás hoy.",
+      "Compara con la marca fina, que es tu nota del Día 0.",
+      "Quédate con un área que haya subido y piensa qué la ha movido.",
+    ],
+    action: { kind: "wheel", text: "Vuelve a puntuar tu rueda de la vida." },
+  },
+  {
+    day: 16,
+    title: "Tu modo semana difícil",
+    text: "Habrá semanas complicadas: exámenes, entregas, viajes. Tenerlas planeadas evita que te saquen del camino.",
+    body: [
+      "La semana difícil no es la excepción: siempre acaba llegando. Lo que cambia es si la vives improvisando o con un plan B ya decidido.",
+      "En modo semana difícil, solo tu ancla es obligatoria. Los otros dos hábitos pasan a ser opcionales sin culpa. La app te propondrá activarlo la víspera de las semanas que marcaste como críticas, y también puedes activarlo tú cuando lo necesites.",
+    ],
+    steps: [
+      "Piensa en la próxima semana complicada que ya ves venir.",
+      "Confirma lo que mantienes sí o sí: el mínimo de tu ancla.",
+      "Decide qué dejas en pausa sin culpa y cuándo lo retomas.",
+    ],
+    basis: practice("Decidir el plan B con la cabeza fría es más fácil que improvisarlo en mitad de la tormenta."),
+    action: {
+      kind: "form",
+      text: "Diseña tu modo semana difícil.",
+      fields: [
+        { key: "when", label: "¿Qué semanas difíciles ves venir?", placeholder: "Los exámenes de febrero, el viaje de marzo…" },
+        { key: "keep", label: "¿Qué mantienes sí o sí?", placeholder: "El mínimo de mi ancla y dormir 7 horas." },
+        { key: "pause", label: "¿Qué dejas en pausa sin culpa?", placeholder: "Entrenar completo: lo retomo el lunes siguiente." },
       ],
     },
   },
@@ -430,18 +430,12 @@ export const LESSONS: Lesson[] = [
     day: 17,
     title: "Ajustar no es rendirse",
     text: "Si un hábito no sale, el problema no eres tú: es el diseño. Cambiarlo para seguir avanzando es una decisión inteligente.",
-    body: [
-      "Hablarte con dureza cuando fallas no te hace más disciplinado; suele hacer que evites el tema. Tratarte como tratarías a un amigo te ayuda a volver antes.",
-    ],
+    body: ["Ajustar a tiempo es lo que separa a quien termina de quien abandona en la tercera semana."],
     steps: [
       "Elige el hábito que más te cuesta. Aquí abajo te decimos cuál es según tus datos.",
       "Cambia una sola cosa: la hora, la señal o el nivel.",
       "Pruébalo así 3 días antes de volver a juzgarlo.",
     ],
-    science: {
-      text: "Las personas que se trataron con comprensión después de un fallo se esforzaron más por mejorar que las que se criticaron.",
-      source: "Breines y Chen, 2012",
-    },
     action: check("Cambia una cosa del hábito que más te cuesta: la hora, la señal o el nivel."),
   },
   {
@@ -456,10 +450,10 @@ export const LESSONS: Lesson[] = [
       "Repítelo durante 5 minutos, a tu ritmo.",
       "Si lo prefieres, escribe 3 líneas sobre cómo estás y qué te preocupa.",
     ],
-    science: {
-      text: "Cinco minutos diarios de suspiro cíclico durante un mes mejoraron el estado de ánimo y redujeron la ansiedad, incluso algo más que la meditación.",
-      source: "Balban y otros, Universidad de Stanford, 2023",
-    },
+    basis: study(
+      "sighing",
+      "Cinco minutos diarios de suspiro cíclico durante un mes mejoraron el estado de ánimo y redujeron la ansiedad, algo más que la meditación en el mismo estudio.",
+    ),
     action: check("Haz 5 minutos de suspiro cíclico o escribe 3 líneas sobre cómo estás."),
   },
   {
@@ -474,10 +468,7 @@ export const LESSONS: Lesson[] = [
       "Escríbele hoy y propón un día y una hora concretos.",
       "Cuando quedéis, deja el móvil guardado.",
     ],
-    science: {
-      text: "El estudio más largo sobre la felicidad sigue a cientos de personas desde 1938. Su conclusión principal: la calidad de las relaciones predice la salud y el bienestar más que el dinero o el éxito.",
-      source: "Estudio de Harvard sobre el Desarrollo Adulto",
-    },
+    basis: practice("Un día y una hora concretos convierten un «a ver si quedamos» en un plan."),
     action: check("Escribe hoy a alguien que te importa y propón un día para veros."),
   },
   {
@@ -485,17 +476,14 @@ export const LESSONS: Lesson[] = [
     title: "Saber cuándo parar",
     text: "Sin una hora de cierre, el trabajo o el estudio lo ocupan todo. Parar a tiempo es lo que te deja volver con energía mañana.",
     body: [
-      "Si terminas el día con tareas abiertas en la cabeza, tu atención se queda enganchada a ellas aunque ya estés descansando. Un pequeño ritual de cierre le dice a tu cabeza que todo está apuntado.",
+      "Si terminas el día con tareas abiertas en la cabeza, sigues dándoles vueltas aunque ya estés descansando. Un pequeño ritual de cierre le dice a tu cabeza que todo está apuntado.",
     ],
     steps: [
       "Elige tu hora de cierre.",
       "Diseña un ritual de 3 pasos: repasar lo pendiente, apuntar lo primero de mañana y cerrar el portátil.",
       "Termina siempre con el mismo gesto, para marcar el final.",
     ],
-    science: {
-      text: "Pasar a otra tarea sin cerrar la anterior deja un «residuo de atención» que empeora el rendimiento en lo siguiente que haces.",
-      source: "Sophie Leroy, 2009",
-    },
+    basis: practice("Apuntar lo pendiente y cerrar con el mismo gesto cada día ayuda a desconectar de verdad."),
     action: {
       kind: "form",
       text: "Define tu cierre del día.",
@@ -521,10 +509,6 @@ export const LESSONS: Lesson[] = [
       "Decide qué hábito subes y, si hace falta, cuál bajas.",
       "Escribe el ajuste concreto para la semana 4.",
     ],
-    science: {
-      text: "Los hábitos se consolidan cuando se repiten en un contexto estable. Ajustar la hora o la señal ayuda más que esforzarse más.",
-      source: "Wendy Wood, 2019",
-    },
     action: check("Haz tu revisión semanal."),
   },
 
@@ -541,10 +525,7 @@ export const LESSONS: Lesson[] = [
       "Escribe una frase que empiece por «Soy una persona que…».",
       "Léela antes de hacer el hábito los próximos días.",
     ],
-    science: {
-      text: "Tendemos a deducir quiénes somos a partir de lo que hacemos. Repetir una conducta acaba cambiando cómo te ves.",
-      source: "Daryl Bem, teoría de la autopercepción, 1972",
-    },
+    basis: practice("Lo que repites acaba diciendo quién eres. Ponerle palabras ayuda a sostenerlo."),
     action: {
       kind: "form",
       text: "Escribe tu frase de identidad.",
@@ -557,42 +538,47 @@ export const LESSONS: Lesson[] = [
     text: "La forma más fácil de recordar un hábito es unirlo a algo que ya haces cada día sin pensar.",
     body: [
       "Lavarte los dientes, hacer el café o llegar a casa son señales que nunca fallan. Si pegas tu hábito justo detrás, el ancla hace de recordatorio.",
-      "Y si un hábito te da pereza, únelo a algo que te guste: tu pódcast favorito solo mientras caminas, tu serie solo después de estudiar.",
+      "Y si un hábito te da pereza, únelo a algo que te guste: tu pódcast favorito solo mientras caminas.",
     ],
     steps: [
       "Elige el hábito que más se te olvida.",
       "Busca algo que ya haces cada día justo antes del momento ideal.",
       "Escribe: «Después de [ancla], haré [hábito]».",
     ],
-    science: {
-      text: "Las personas que solo podían escuchar sus audiolibros favoritos en el gimnasio fueron bastante más al gimnasio que las que podían escucharlos en cualquier momento.",
-      source: "Milkman, Minson y Volpp, 2014",
-    },
+    basis: study(
+      "ifThen",
+      "Unir el hábito a una señal concreta es otra forma de plan «si-entonces»: cuando ocurre la señal, la acción ya está decidida.",
+    ),
     action: check("Une tu hábito más olvidado a algo que ya haces cada día."),
   },
   {
     day: 24,
-    title: "Tu modo semana difícil",
-    text: "Habrá semanas complicadas: exámenes, entregas, viajes. Tenerlas planeadas evita que te saquen del camino.",
+    title: "Volver sin empezar de cero",
+    text: "Un viaje, una gripe o una semana de exámenes pueden sacarte del plan varios días. Lo que importa es cómo vuelves: sin empezar de cero.",
     body: [
-      "La semana difícil no es la excepción: siempre acaba llegando. Lo que cambia es si la vives improvisando o con un plan B que ya has decidido.",
+      "Volver no es recuperar lo perdido ni compensar con un día enorme. Es retomar con el mínimo el primer día posible y subir poco a poco.",
+      "Tu racha no vuelve a cero por un día en blanco, y tu sistema tampoco: sigue ahí, esperando a que lo retomes.",
     ],
     steps: [
-      "Piensa en la próxima semana complicada que ya ves venir.",
-      "Decide qué mantienes sí o sí. Normalmente, el mínimo de tus 3 hábitos.",
-      "Decide qué dejas en pausa sin culpa y cuándo lo retomas.",
+      "Piensa qué te puede sacar del plan varios días este año.",
+      "Decide con qué nivel vuelves. Casi siempre, el mínimo.",
+      "Decide qué día vuelves, como muy tarde.",
     ],
-    science: {
-      text: "Imaginar lo que quieres y, justo después, el obstáculo que lo puede frenar ayuda más a conseguirlo que pensar solo en positivo.",
-      source: "Gabriele Oettingen, método WOOP",
-    },
+    basis: study(
+      "lally",
+      "En el estudio de la UCL, saltarse un día suelto no frenó la formación del hábito. Los fallos repetidos sí lo debilitaban: por eso lo que cuenta es volver pronto, no volver perfecto.",
+    ),
     action: {
       kind: "form",
-      text: "Diseña tu modo semana difícil.",
+      text: "Escribe tu plan de vuelta.",
       fields: [
-        { key: "when", label: "¿Qué semanas difíciles ves venir?", placeholder: "Los exámenes de febrero, el viaje de marzo…" },
-        { key: "keep", label: "¿Qué mantienes sí o sí?", placeholder: "El mínimo de mis 3 hábitos y dormir 7 horas." },
-        { key: "pause", label: "¿Qué dejas en pausa sin culpa?", placeholder: "Entrenar completo: lo retomo el lunes siguiente." },
+        {
+          key: "trigger",
+          label: "¿Qué te puede sacar del plan varios días?",
+          placeholder: "Un viaje, ponerme enfermo, la semana de exámenes…",
+        },
+        { key: "level", label: "¿Con qué nivel vuelves?", placeholder: "Con el mínimo de los 3 hábitos." },
+        { key: "when", label: "¿Qué día vuelves, como muy tarde?", placeholder: "El día después de volver a casa." },
       ],
     },
   },
@@ -606,12 +592,9 @@ export const LESSONS: Lesson[] = [
     steps: [
       "Mira tu calendario de 30 días en Progreso.",
       "Apunta 3 cosas que has conseguido, por pequeñas que sean.",
-      "Celébralo de alguna forma: cuéntaselo a alguien o date un capricho.",
+      "Celébralo: cuéntalo en la comunidad o date un capricho.",
     ],
-    science: {
-      text: "Tras analizar casi 12.000 entradas de diario de profesionales, lo que más motivaba no eran los premios, sino sentir que avanzaban en algo importante.",
-      source: "Amabile y Kramer, El principio del progreso, 2011",
-    },
+    basis: practice("Escribir lo que has conseguido hace visible un progreso que en el día a día no se nota."),
     action: {
       kind: "form",
       text: "Apunta tus victorias.",
@@ -627,13 +610,9 @@ export const LESSONS: Lesson[] = [
     ],
     steps: [
       "Abre Progreso y mira tu primera semana.",
-      "Compárala con esta: días con check-in, niveles y racha.",
+      "Compárala con esta: días que cuentan, niveles y racha.",
       "Quédate con una cosa que hayas mejorado, aunque sea poca.",
     ],
-    science: {
-      text: "Usar redes sociales en las que te comparas con personas que parecen estar mejor se asocia a una autoestima más baja.",
-      source: "Vogel y otros, 2014",
-    },
     action: check("Compara tu primera semana con esta en Progreso."),
   },
   {
@@ -644,14 +623,10 @@ export const LESSONS: Lesson[] = [
       "El programa acaba, pero el método no. Decidir, cumplir, revisar y repetir es un ciclo que puedes usar cada semana durante años.",
     ],
     steps: [
-      "Confirma tu día y hora de revisión en Perfil.",
+      "Mira en Perfil qué día caen tus revisiones.",
       "Añádelo a tu calendario como una cita que se repite cada semana.",
       "Usa siempre las mismas 3 preguntas: qué ha funcionado, qué no y qué ajustas.",
     ],
-    science: {
-      text: "La revisión semanal es la pieza que mantiene vivo cualquier sistema de organización personal: sin ella, el sistema se desordena en pocas semanas.",
-      source: "David Allen, Organízate con eficacia, 2001",
-    },
     action: check("Pon tu revisión en el calendario como una cita que se repite cada semana."),
   },
   {
@@ -682,10 +657,6 @@ export const LESSONS: Lesson[] = [
       "Escribe una carta corta a esa persona: qué has aprendido, qué te ha costado y de qué sientes orgullo.",
       "Guárdala. Es la prueba de que puedes.",
     ],
-    science: {
-      text: "La fuente más potente de confianza en uno mismo es haber conseguido algo antes. Recordarlo refuerza la creencia de que puedes volver a hacerlo.",
-      source: "Albert Bandura, teoría de la autoeficacia, 1997",
-    },
     action: {
       kind: "text",
       text: "Escribe una carta corta a tu yo del día 1.",
@@ -698,18 +669,18 @@ export const LESSONS: Lesson[] = [
     title: "Y ahora, ¿qué?",
     text: "El progreso no termina aquí: se construye. Hoy decides cómo siguen tus próximos 90 días.",
     body: [
-      "30 días bastan para construir el sistema, pero no para que todo sea automático. Ahora toca consolidar: las próximas semanas son las que hacen que se quede.",
-      "Si dudas entre las opciones, elige mantener. Es la que más protege lo que ya has construido.",
+      "30 días bastan para construir el sistema, pero no para que todo sea automático. Las próximas semanas son las que hacen que se quede.",
+      "Si dudas, elige mantener: es lo que más protege lo que ya has construido. Tu Sistema es tuyo y sigue disponible siempre.",
     ],
     steps: [
       "Repasa tu sistema completo en la pestaña Sistema.",
       "Elige tu plan para los próximos 90 días.",
       "Pon la fecha de tu próxima revisión en el calendario.",
     ],
-    science: {
-      text: "En el estudio de referencia, convertir una conducta en automática llevó de media 66 días, con casos de entre 18 y 254. Un mes es la base; lo que viene después la consolida.",
-      source: "Lally y otros, 2010",
-    },
+    basis: study(
+      "lally",
+      "En el estudio de la UCL, convertir una conducta en automática llevó de media 66 días, con casos de entre 18 y 254. Un mes es la base; lo que viene después la consolida.",
+    ),
     action: {
       kind: "choice",
       text: "Elige tu plan para los próximos 90 días.",

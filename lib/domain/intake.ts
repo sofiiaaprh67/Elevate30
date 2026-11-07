@@ -1,7 +1,8 @@
-/** Validación de las respuestas del cuestionario (lógica pura). */
+/** Validación de las respuestas del cuestionario v2 (lógica pura). */
 import { AREAS, type Area, type Intake, type Wheel } from "./types";
 
-export type IntakeDraft = Partial<Intake>;
+/** Borrador mientras se rellena. `healthConsent` no se guarda en `intake` sino en el perfil. */
+export type IntakeDraft = Partial<Intake> & { healthConsent?: boolean };
 
 export const TOTAL_STEPS = 12;
 
@@ -9,6 +10,7 @@ const ONE_OF = {
   ageRange: ["18-22", "23-26", "27-30", "31+"],
   occupation: ["study", "work", "business", "study_work", "other"],
   freeTime: ["lt1", "1-2", "2-4", "gt4"],
+  freeTimeWeekend: ["lt1", "1-2", "2-4", "gt4"],
   energy: ["morning", "midday", "afternoon", "night"],
   goalType: ["health", "studies", "career", "business", "finance", "wellbeing", "relationships", "other"],
   neglectedArea: AREAS as readonly string[],
@@ -27,16 +29,16 @@ export function isValidWheel(wheel: unknown): wheel is Wheel {
   });
 }
 
+const text = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : undefined);
+
 /** Limpia un borrador recibido del cliente: descarta lo que no sea válido. */
 export function sanitizeDraft(input: unknown): IntakeDraft {
   if (!input || typeof input !== "object") return {};
   const raw = input as Record<string, unknown>;
   const out: IntakeDraft = {};
 
-  if (typeof raw.name === "string") {
-    const name = raw.name.trim().slice(0, 60);
-    if (name) out.name = name;
-  }
+  const name = text(raw.name, 60);
+  if (name) out.name = name;
   for (const key of Object.keys(ONE_OF) as (keyof typeof ONE_OF)[]) {
     const v = raw[key];
     if (typeof v === "string" && (ONE_OF[key] as readonly string[]).includes(v)) {
@@ -46,11 +48,18 @@ export function sanitizeDraft(input: unknown): IntakeDraft {
   if (isValidWheel(raw.wheel)) {
     out.wheel = Object.fromEntries(AREAS.map((a) => [a, (raw.wheel as Wheel)[a]])) as Wheel;
   }
-  if (typeof raw.goalText === "string") out.goalText = raw.goalText.trim().slice(0, 200);
-  if (Number.isInteger(raw.reviewWeekday) && (raw.reviewWeekday as number) >= 0 && (raw.reviewWeekday as number) <= 6) {
-    out.reviewWeekday = raw.reviewWeekday as number;
+  const goalText = text(raw.goalText, 200);
+  if (goalText !== undefined) out.goalText = goalText;
+  if (Array.isArray(raw.criticalWeeks)) {
+    out.criticalWeeks = [...new Set(raw.criticalWeeks.filter((w) => w === 1 || w === 2 || w === 3 || w === 4))].sort();
   }
-  if (typeof raw.reviewTime === "string" && TIME_RE.test(raw.reviewTime)) out.reviewTime = raw.reviewTime;
+  const criticalNote = text(raw.criticalNote, 200);
+  if (criticalNote !== undefined) out.criticalNote = criticalNote;
+  const worthIt = text(raw.worthIt, 300);
+  if (worthIt !== undefined) out.worthIt = worthIt;
+  if (typeof raw.wantsPartner === "boolean") out.wantsPartner = raw.wantsPartner;
+  if (typeof raw.reminderTime === "string" && TIME_RE.test(raw.reminderTime)) out.reminderTime = raw.reminderTime;
+  if (raw.healthConsent === true) out.healthConsent = true;
   return out;
 }
 
@@ -58,29 +67,30 @@ export function sanitizeDraft(input: unknown): IntakeDraft {
 export function isStepComplete(step: number, d: IntakeDraft): boolean {
   switch (step) {
     case 1:
-      return Boolean(d.name?.trim());
+      return Boolean(d.name?.trim() && d.ageRange && d.healthConsent);
     case 2:
-      return Boolean(d.ageRange);
-    case 3:
       return Boolean(d.occupation);
+    case 3:
+      return Boolean(d.freeTime && d.freeTimeWeekend);
     case 4:
-      return Boolean(d.freeTime);
-    case 5:
       return Boolean(d.energy);
-    case 6:
+    case 5:
       return isValidWheel(d.wheel);
-    case 7:
+    case 6:
       return Boolean(d.goalType && d.goalText?.trim());
-    case 8:
-      return Boolean(d.neglectedArea);
-    case 9:
+    case 7:
       return Boolean(d.exerciseDays);
-    case 10:
+    case 8:
       return Boolean(d.sleepHours);
-    case 11:
+    case 9:
       return Boolean(d.quitReason);
+    case 10:
+      // "Ninguna por ahora" es una respuesta válida: lista vacía
+      return Array.isArray(d.criticalWeeks);
+    case 11:
+      return Boolean(d.worthIt?.trim());
     case 12:
-      return d.reviewWeekday !== undefined && Boolean(d.reviewTime);
+      return typeof d.wantsPartner === "boolean" && Boolean(d.reminderTime);
     default:
       return false;
   }
@@ -92,6 +102,13 @@ export function firstIncompleteStep(d: IntakeDraft): number | null {
   return null;
 }
 
+/**
+ * Respuestas completas, o null si falta alguna. El consentimiento de salud
+ * no forma parte de las respuestas: lo comprueba `completeIntake` al terminar.
+ */
 export function toIntake(d: IntakeDraft): Intake | null {
-  return firstIncompleteStep(d) === null ? (d as Intake) : null;
+  if (firstIncompleteStep({ ...d, healthConsent: true }) !== null) return null;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { healthConsent, ...intake } = d;
+  return intake as Intake;
 }

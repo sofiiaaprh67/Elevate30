@@ -11,6 +11,7 @@ import {
   habitByScore,
   percentFull,
   streak,
+  streakStatus,
   type Checkin,
 } from "@/lib/domain/stats";
 import type { Intake, Level, Slot } from "@/lib/domain/types";
@@ -31,8 +32,12 @@ const intake: Intake = {
   exerciseDays: "none",
   sleepHours: "7-8",
   quitReason: "all_or_nothing",
-  reviewWeekday: 0,
-  reviewTime: "19:00",
+  freeTimeWeekend: "2-4",
+  criticalWeeks: [2],
+  criticalNote: "Exámenes",
+  worthIt: "Llegar a los exámenes con el temario al día y sin ir siempre cansada",
+  wantsPartner: true,
+  reminderTime: "20:00",
 };
 const plan = generatePlan(intake);
 
@@ -49,8 +54,20 @@ describe("días y racha", () => {
     expect(daysDone(by, START, d(4))).toBe(3);
     // Hoy (día 4) solo tiene "Hoy no": la racha cuenta hasta ayer
     expect(streak(by, START, d(4))).toBe(3);
-    // Un hueco rompe la racha
+    // Dos días seguidos en blanco rompen la racha
     expect(streak(by, START, d(6))).toBe(0);
+  });
+
+  it("racha flexible: un día en blanco suelto no la rompe", () => {
+    const by = groupByDate([ci(1, "body", "min"), ci(2, "body", "min"), ci(3, "body", "skip"), ci(4, "mind", "half")]);
+    expect(streak(by, START, d(4))).toBe(3);
+    expect(streakStatus(by, START, d(4))).toBe("safe");
+    // Día 5 sin hacer nada todavía y ayer contó: a salvo
+    expect(streakStatus(by, START, d(5))).toBe("safe");
+    // Día 6 sin hacer nada y el 5 quedó en blanco: en riesgo, pero aún no rota
+    expect(streak(by, START, d(6))).toBe(3);
+    expect(streakStatus(by, START, d(6))).toBe("at_risk");
+    expect(streak(by, START, d(7))).toBe(0);
   });
 
   it("si hoy ya está cumplido, la racha lo incluye", () => {
@@ -84,6 +101,23 @@ describe("avisos", () => {
     );
   });
 
+  it("regla de oro: dos «Hoy no» seguidos en un hábito", () => {
+    const list = [1, 2, 3].flatMap((n) => [ci(n, "body", "full"), ci(n, "goal", "min")]).concat([ci(2, "mind", "skip"), ci(3, "mind", "skip")]);
+    const a = alerts(groupByDate(list), plan, START, d(4), 4);
+    expect(a[0].kind).toBe("golden");
+    expect(a[0].slot).toBe("mind");
+    expect(a[0].text).toContain("nunca dos días seguidos sin nada");
+  });
+
+  it("la víspera de una semana crítica propone el modo semana difícil, y no más de 2 avisos", () => {
+    const a = alerts({}, plan, START, d(7), 7, { criticalWeeks: [2] });
+    expect(a).toHaveLength(2);
+    expect(a[0].kind).toBe("hard_week");
+    expect(a[0].text).toContain("semana 2");
+    expect(alerts({}, plan, START, d(7), 7, { criticalWeeks: [2], hardWeekActive: true })[0].kind).not.toBe("hard_week");
+    expect(alerts({}, plan, START, d(6), 6, { criticalWeeks: [2] }).some((x) => x.kind === "hard_week")).toBe(false);
+  });
+
   it("propone subir de nivel tras 5 días en completo", () => {
     const list = [1, 2, 3, 4, 5].flatMap((n) => [ci(n, "body", "full"), ci(n, "mind", "min"), ci(n, "goal", "min")]);
     const a = alerts(groupByDate(list), plan, START, d(6), 6);
@@ -94,7 +128,16 @@ describe("avisos", () => {
 });
 
 describe("frases PARA TI", () => {
-  const ctx: ForYouContext = { intake, plan, daysDone: 8, streak: 3, percentFull: 40, mostDone: "goal", leastDone: "mind" };
+  const ctx: ForYouContext = {
+    intake,
+    plan,
+    daysDone: 8,
+    streak: 3,
+    percentFull: 40,
+    mostDone: "goal",
+    leastDone: "mind",
+    reviewWeekday: 0,
+  };
 
   it("día 2: las dos áreas más bajas, con desempate por la pregunta 8", () => {
     expect(lowestTwoAreas(intake)).toEqual(["mind", "finance"]);
@@ -105,7 +148,10 @@ describe("frases PARA TI", () => {
     expect(forYouPhrase(3, ctx)).toBe(
       "Ejemplo: aprobar las 2 asignaturas que más te cuestan con un bloque de estudio diario. Tu objetivo ahora mismo: «Aprobar Estadística»",
     );
-    expect(forYouPhrase(4, ctx)).toBe("Tus hábitos: Caminar, Pausa mental, Bloque de estudio.");
+    expect(forYouPhrase(4, ctx)).toBe("Tus hábitos: Caminar, Pausa mental y Bloque de estudio.");
+    expect(forYouPhrase(4, { ...ctx, anchor: "goal" })).toBe(
+      "Tus hábitos: Caminar, Pausa mental y Bloque de estudio. Tu ancla ahora es «Bloque de estudio».",
+    );
     expect(forYouPhrase(5, ctx)).toBe("Con menos de 1 hora libre al día, tus niveles son de 20, 10 y 2 minutos.");
     expect(forYouPhrase(6, ctx)).toBe("Tienes más energía por la noche: pon «Bloque de estudio» a las 21:00.");
     expect(forYouPhrase(17, ctx)).toBe(
@@ -113,9 +159,11 @@ describe("frases PARA TI", () => {
     );
     expect(forYouPhrase(22, ctx)).toBe("El hábito que más cumples es «Bloque de estudio».");
     expect(forYouPhrase(26, ctx)).toBe(
-      "Llevas 8 días con check-in, una racha de 3 y un 40% de hábitos en nivel completo.",
+      "Llevas 8 días que cuentan, una racha de 3 y un 40% de hábitos en nivel completo.",
     );
-    expect(forYouPhrase(27, ctx)).toBe("Ahora tu revisión es los domingos a las 19:00.");
+    expect(forYouPhrase(27, ctx)).toBe(
+      "Tus revisiones caen en domingos: ponla en tu calendario como una cita que se repite.",
+    );
     expect(forYouPhrase(1, ctx)).toBe("Ana, tu objetivo es «Aprobar Estadística». Estos 30 días van de construir el sistema que te lleve hasta ahí.");
     expect(forYouPhrase(4, ctx)).not.toBeNull();
     expect(forYouPhrase(15, ctx)).toBeNull();

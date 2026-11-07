@@ -29,9 +29,7 @@ for (const r of rows) {
     exerciseDays: r.exercise_days,
     sleepHours: r.sleep_hours,
     quitReason: r.quit_reason,
-    reviewWeekday: r.review_weekday,
-    reviewTime: r.review_time,
-  } as Intake;
+  } as unknown as Intake;
   const h =
     r.slot === "body"
       ? bodyHabit(r.area as BodyArea, intake)

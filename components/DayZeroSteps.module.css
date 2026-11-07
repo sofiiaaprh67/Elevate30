@@ -1,0 +1,59 @@
+.wrap {
+  display: grid;
+  gap: var(--s-3);
+}
+.label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  color: var(--cyan);
+}
+.of {
+  font-family: var(--font-text);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ash);
+}
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.steps li {
+  display: grid;
+  gap: 6px;
+}
+.bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--steel-2);
+}
+.steps li[data-state="done"] .bar {
+  background: var(--blue);
+}
+.steps li[data-state="current"] .bar {
+  background: var(--brand-grad);
+}
+.name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--slate);
+}
+.steps li[data-state="done"] .name {
+  color: var(--ash);
+}
+.steps li[data-state="current"] .name {
+  color: var(--porcelain);
+}
+@media (max-width: 360px) {
+  .name {
+    font-size: 11px;
+  }
+}

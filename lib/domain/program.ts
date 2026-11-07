@@ -6,7 +6,7 @@
 
 export const PROGRAM_TZ = "Europe/Madrid";
 export const PROGRAM_DAYS = 30;
-export const DEFAULT_START_DATE = "2027-01-04";
+export const DEFAULT_START_DATE = "2027-01-11";
 
 export type ISODate = string; // "YYYY-MM-DD"
 
@@ -89,4 +89,42 @@ export function formatLongDate(date: ISODate): string {
 export function currentProgramDay(start: ISODate, today: ISODate): number {
   const state = programState(start, today);
   return state.kind === "before" ? 0 : state.kind === "finished" ? PROGRAM_DAYS + 1 : state.day;
+}
+
+const shortDate = new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short", timeZone: "UTC" });
+const weekdayShort = new Intl.DateTimeFormat("es-ES", { weekday: "short", timeZone: "UTC" });
+
+/** "11 ene" */
+export function formatShortDate(date: ISODate): string {
+  return shortDate.format(new Date(toUTC(date))).replace(".", "");
+}
+
+/** "lun" */
+export function formatWeekdayShort(date: ISODate): string {
+  return weekdayShort.format(new Date(toUTC(date))).replace(".", "");
+}
+
+/** Fechas de la semana `week` (1–4) del programa: "11–17 ene" o "29 ene – 4 feb". */
+export function weekRange(start: ISODate, week: number): string {
+  const from = dateForDay(start, (week - 1) * 7 + 1);
+  const to = dateForDay(start, week * 7);
+  const [fd, fm] = formatShortDate(from).split(" ");
+  const [td, tm] = formatShortDate(to).split(" ");
+  return fm === tm ? `${fd}–${td} ${tm}` : `${fd} ${fm} – ${td} ${tm}`;
+}
+
+/** Semana del programa (1–4) de un día; los días 29 y 30 cuentan como semana 4. */
+export function weekOfDay(day: number): number {
+  return Math.min(Math.ceil(day / 7), 4);
+}
+
+/**
+ * Último día que cubre el modo semana difícil si se activa el día `day`:
+ * la víspera de una semana (días 7, 14 y 21) cubre la semana siguiente;
+ * cualquier otro día, hasta el final de la semana en curso.
+ */
+export function hardWeekEnd(start: ISODate, day: number): ISODate {
+  const isEve = day % 7 === 0 && day < 28;
+  const lastDay = isEve ? day + 7 : Math.min(Math.ceil(Math.max(day, 1) / 7) * 7, PROGRAM_DAYS);
+  return dateForDay(start, day >= 28 ? PROGRAM_DAYS : lastDay);
 }

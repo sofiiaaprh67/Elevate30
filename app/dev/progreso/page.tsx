@@ -20,8 +20,12 @@ const SAMPLE: Intake = {
   exerciseDays: "none",
   sleepHours: "6-7",
   quitReason: "all_or_nothing",
-  reviewWeekday: 0,
-  reviewTime: "19:00",
+  freeTimeWeekend: "2-4",
+  criticalWeeks: [2],
+  criticalNote: "Exámenes",
+  worthIt: "Llegar a los exámenes con el temario al día y sin ir siempre cansada",
+  wantsPartner: true,
+  reminderTime: "20:00",
 };
 
 const PATTERN: Level[] = ["full", "half", "min", "full", "skip", "full", "half"];

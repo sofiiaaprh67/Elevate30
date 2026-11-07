@@ -1,6 +1,7 @@
 import { TodayView } from "@/app/(app)/hoy/TodayView";
 import s from "@/app/(app)/shell.module.css";
 import { BottomNav } from "@/components/BottomNav";
+import { devSetHardWeek, devSetLightDay } from "../actions";
 import { generatePlan } from "@/lib/domain/plan";
 import { DEFAULT_START_DATE, dateForDay } from "@/lib/domain/program";
 import type { Checkin } from "@/lib/domain/stats";
@@ -19,8 +20,12 @@ const SAMPLE: Intake = {
   exerciseDays: "none",
   sleepHours: "6-7",
   quitReason: "all_or_nothing",
-  reviewWeekday: 0,
-  reviewTime: "19:00",
+  freeTimeWeekend: "2-4",
+  criticalWeeks: [2],
+  criticalNote: "Exámenes",
+  worthIt: "Llegar a los exámenes con el temario al día y sin ir siempre cansada",
+  wantsPartner: true,
+  reminderTime: "20:00",
 };
 
 /** Check-ins de ejemplo: cuerpo siempre en completo, mente sin cumplir los últimos días. */
@@ -35,9 +40,14 @@ function sampleCheckins(day: number): Checkin[] {
   return out;
 }
 
-export default async function DevHoy({ searchParams }: { searchParams: Promise<{ dia?: string }> }) {
-  const { dia } = await searchParams;
+export default async function DevHoy({
+  searchParams,
+}: {
+  searchParams: Promise<{ dia?: string; justo?: string; semana?: string; ancla?: string }>;
+}) {
+  const { dia, justo, semana, ancla } = await searchParams;
   const day = Math.min(Math.max(Number(dia) || 9, 1), 30);
+  const anchor = ancla === "body" || ancla === "mind" ? ancla : "goal";
   return (
     <>
       <main id="contenido" className={s.main}>
@@ -51,6 +61,11 @@ export default async function DevHoy({ searchParams }: { searchParams: Promise<{
           checkins={sampleCheckins(day)}
           actionDone={false}
           entries={{}}
+          anchor={anchor}
+          hardWeekUntil={semana ? dateForDay(DEFAULT_START_DATE, Math.ceil(day / 7) * 7) : null}
+          light={Boolean(justo)}
+          pendingLesson={day > 1 && !justo ? { day: day - 1, title: "Planifica tu día en 5 minutos", href: `/dev/hoy?dia=${day - 1}` } : null}
+          actions={{ setLightDay: devSetLightDay, setHardWeek: devSetHardWeek }}
         />
       </main>
       <BottomNav />

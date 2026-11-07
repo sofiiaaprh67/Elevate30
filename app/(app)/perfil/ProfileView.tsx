@@ -17,7 +17,8 @@ export function ProfileView({
   isFounder,
   intake,
   plan,
-  reviewForm,
+  program,
+  reminderForm,
   signOut,
 }: {
   email: string;
@@ -25,7 +26,8 @@ export function ProfileView({
   isFounder: boolean;
   intake: Intake;
   plan: Plan;
-  reviewForm: ReactNode;
+  program: { startText: string; reviewWeekday: number; canChangeDate: boolean };
+  reminderForm: ReactNode;
   signOut: ReactNode;
 }) {
   return (
@@ -80,14 +82,26 @@ export function ProfileView({
         <p className={p.footnote}>Toca un hábito para ver sus niveles o cambiarlo.</p>
       </section>
 
-      {/* ---------- Revisión semanal ---------- */}
-      <section aria-labelledby="review-title">
-        <SectionTitle id="review-title">Revisión semanal</SectionTitle>
+      {/* ---------- Tu programa ---------- */}
+      <section aria-labelledby="program-title">
+        <SectionTitle id="program-title">Tu programa</SectionTitle>
         <div className={p.panel}>
-          <p className={p.current}>
-            Ahora: los {WEEKDAY_PLURAL[intake.reviewWeekday]} a las {intake.reviewTime}.
-          </p>
-          {reviewForm}
+          <dl className={p.facts}>
+            <div>
+              <dt>Día 1</dt>
+              <dd>{program.startText}</dd>
+            </div>
+            <div>
+              <dt>Revisiones</dt>
+              <dd>Los {WEEKDAY_PLURAL[program.reviewWeekday]}: días 7, 14, 21 y 28</dd>
+            </div>
+          </dl>
+          {program.canChangeDate ? (
+            <Link href="/empezar" className={p.inlineLink}>
+              Cambiar mi fecha de inicio
+            </Link>
+          ) : null}
+          {reminderForm}
         </div>
       </section>
 

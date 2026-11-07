@@ -1,4 +1,6 @@
 import { PlanView } from "@/app/plan/PlanView";
+import { AnchorPicker } from "@/components/AnchorPicker";
+import { devSetAnchor } from "../actions";
 import { PillButton } from "@/components/ui/Pill";
 import { generatePlan } from "@/lib/domain/plan";
 import type { Intake } from "@/lib/domain/types";
@@ -16,11 +18,18 @@ const SAMPLE: Intake = {
   exerciseDays: "none",
   sleepHours: "7-8",
   quitReason: "all_or_nothing",
-  reviewWeekday: 0,
-  reviewTime: "19:00",
+  freeTimeWeekend: "2-4",
+  criticalWeeks: [2],
+  criticalNote: "Exámenes",
+  worthIt: "Llegar a los exámenes con el temario al día y sin ir siempre cansada",
+  wantsPartner: true,
+  reminderTime: "20:00",
 };
 
-export default function DevPlan() {
+export default async function DevPlan({ searchParams }: { searchParams: Promise<{ ancla?: string }> }) {
+  const { ancla } = await searchParams;
+  const anchor = ancla === "body" || ancla === "mind" || ancla === "goal" ? ancla : null;
+  const plan = generatePlan(SAMPLE);
   return (
     <PlanView
       name={SAMPLE.name}
@@ -28,9 +37,13 @@ export default function DevPlan() {
       freeTime={SAMPLE.freeTime}
       energy={SAMPLE.energy}
       goalType={SAMPLE.goalType}
-      plan={generatePlan(SAMPLE)}
-      cta="Empezar mi día 1"
-      ctaHref="/dev/plan"
+      plan={plan}
+      anchor={anchor}
+      anchorPicker={<AnchorPicker plan={plan} value={anchor} action={devSetAnchor} />}
+      dayZero
+      canSwap
+      cta="Seguir: tu compromiso"
+      ctaHref="/dev/compromiso"
       swap={() => (
         <PillButton type="button" variant="ghost" size="sm" block>
           Cambiar hábito

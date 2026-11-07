@@ -3,7 +3,7 @@ import type { ISODate } from "@/lib/domain/program";
 import type { Checkin } from "@/lib/domain/stats";
 import { createClient } from "@/lib/supabase/server";
 
-export type EntryKind = "weekly_review" | "bad_days_plan" | "wheel_midpoint" | "letter_day1" | "plan_90" | "lesson";
+export type EntryKind = "weekly_review" | "bad_days_plan" | "wheel_midpoint" | "letter_day1" | "plan_90" | "lesson" | "light_day";
 
 export async function getCheckins(userId: string): Promise<Checkin[]> {
   const supabase = await createClient();

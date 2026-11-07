@@ -311,3 +311,33 @@
   font-size: 14px;
   color: var(--danger);
 }
+
+/* ---------- Tu programa ---------- */
+.facts {
+  margin: 0;
+  display: grid;
+  gap: var(--s-3);
+}
+.facts div {
+  display: grid;
+  gap: 2px;
+}
+.facts dt {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ash);
+}
+.facts dd {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.inlineLink {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cyan);
+}

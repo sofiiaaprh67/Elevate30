@@ -1,0 +1,159 @@
+/* ---------- Cuenta atrás ---------- */
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-8) 0 var(--s-4);
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -40px;
+  top: -40px;
+  width: 340px;
+  aspect-ratio: 1;
+  background: radial-gradient(closest-side, rgba(0, 102, 255, 0.24), transparent 70%);
+  pointer-events: none;
+}
+.kicker {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cyan);
+}
+.count {
+  display: grid;
+  gap: 4px;
+}
+.num {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(104px, 34vw, 150px);
+  line-height: 0.85;
+  letter-spacing: -0.07em;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(180deg, var(--porcelain) 30%, rgba(248, 250, 252, 0.35));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.unit {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--ash);
+}
+.change {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ash);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- Compromiso ---------- */
+.commit {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-6) var(--s-5);
+  border-radius: var(--r-card);
+  background:
+    radial-gradient(120% 100% at 100% 0%, rgba(0, 217, 255, 0.12), transparent 60%),
+    var(--carbon);
+  box-shadow: inset 0 0 0 1px var(--steel-2);
+}
+.commitLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ash);
+}
+.quote {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.anchor {
+  font-size: 15px;
+  color: var(--ash);
+}
+.anchor strong {
+  color: var(--porcelain);
+}
+
+/* ---------- Mientras tanto ---------- */
+.meanwhile {
+  display: grid;
+  gap: var(--s-3);
+  padding-top: var(--s-2);
+}
+.sectionTitle {
+  padding: 0 var(--s-1);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-radius: var(--r-tile);
+  background: var(--graphite);
+  box-shadow: var(--line);
+  overflow: hidden;
+}
+.list li + li {
+  border-top: 1px solid var(--steel);
+}
+.item {
+  display: grid;
+  grid-template-columns: 32px 1fr 16px;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 68px;
+  padding: 10px var(--s-4);
+  color: var(--porcelain);
+}
+.item:hover {
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.03);
+}
+.item > svg {
+  width: 16px;
+  height: 16px;
+  color: var(--ash);
+}
+.step {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 0 0 1.5px var(--steel-2);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--cyan);
+}
+.itemText {
+  display: grid;
+  gap: 2px;
+}
+.itemTitle {
+  font-weight: 600;
+  font-size: 16px;
+}
+.itemSub {
+  font-size: 13px;
+  color: var(--ash);
+}

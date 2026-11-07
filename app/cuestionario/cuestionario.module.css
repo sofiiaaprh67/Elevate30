@@ -3,12 +3,18 @@
   background: var(--gradient-carbon);
 }
 
+.steps {
+  width: 100%;
+  max-width: calc(var(--maxw) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: calc(16px + var(--safe-top)) var(--gutter) 0;
+}
 .wrap {
   width: 100%;
   max-width: calc(var(--maxw) + 2 * var(--gutter));
-  min-height: 100dvh;
+  min-height: calc(100dvh - 80px);
   margin: 0 auto;
-  padding: calc(16px + var(--safe-top)) var(--gutter) 0;
+  padding: var(--s-5) var(--gutter) 0;
   display: flex;
   flex-direction: column;
 }
@@ -242,6 +248,104 @@
   color: var(--porcelain);
 }
 .day[aria-checked="true"] {
+  background: var(--blue);
+  box-shadow: none;
+  color: var(--white);
+}
+
+/* ---------- Consentimiento de salud ---------- */
+.consent {
+  position: relative;
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: var(--s-3);
+  align-items: start;
+  padding: var(--s-4);
+  border-radius: var(--r-field);
+  background: var(--graphite);
+  box-shadow: var(--line);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ash);
+  cursor: pointer;
+}
+.consent input {
+  position: absolute;
+  opacity: 0;
+  width: 24px;
+  height: 24px;
+}
+.consentBox {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 0 0 1.5px var(--steel-2);
+  color: transparent;
+}
+.consentBox svg {
+  width: 14px;
+  height: 14px;
+}
+.consent input:checked + .consentBox {
+  background: var(--blue);
+  box-shadow: none;
+  color: var(--white);
+}
+.consent input:focus-visible + .consentBox {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+/* ---------- Semanas críticas ---------- */
+.weeks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-2);
+}
+.week {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  min-height: 72px;
+  padding: 12px 12px 12px 16px;
+  border-radius: var(--r-field);
+  background: var(--graphite);
+  box-shadow: var(--line);
+  text-align: left;
+  color: var(--porcelain);
+  transition:
+    box-shadow 0.2s var(--ease),
+    background-color 0.2s var(--ease);
+}
+.week[aria-checked="true"] {
+  background: rgba(255, 210, 122, 0.1);
+  box-shadow: inset 0 0 0 1.5px var(--warn);
+}
+.week[aria-checked="true"] .radio {
+  background: var(--warn);
+  box-shadow: none;
+  color: var(--ink);
+}
+.weekText {
+  display: grid;
+  gap: 2px;
+}
+.weekName {
+  font-weight: 600;
+  font-size: 16px;
+}
+.weekDates {
+  font-size: 13px;
+  color: var(--ash);
+}
+.choice[role="checkbox"][aria-checked="true"] {
+  background: rgba(0, 102, 255, 0.14);
+  box-shadow: inset 0 0 0 1.5px var(--blue);
+}
+.choice[role="checkbox"][aria-checked="true"] .radio {
   background: var(--blue);
   box-shadow: none;
   color: var(--white);

@@ -8,7 +8,7 @@ export default function DevCuenta() {
   return (
     <>
       <main id="contenido" className={s.main}>
-        <CountdownView start={DEFAULT_START_DATE} daysLeft={state.kind === "before" ? state.daysLeft : 0} hasPlan />
+        <CountdownView start={DEFAULT_START_DATE} daysLeft={state.kind === "before" ? state.daysLeft : 0} hasPlan anchorName="Bloque de estudio" />
       </main>
       <BottomNav />
     </>

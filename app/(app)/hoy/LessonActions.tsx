@@ -288,6 +288,8 @@ export function WeeklyReview({
   review,
   plan,
   week,
+  nextWeekCritical,
+  hardWeek,
   initial,
 }: {
   userId: string;
@@ -295,6 +297,10 @@ export function WeeklyReview({
   review: Review;
   plan: Plan;
   week: WeekRow[];
+  /** Número de la semana que viene si la persona la marcó como crítica. */
+  nextWeekCritical: number | null;
+  /** Botón para activar el modo semana difícil. */
+  hardWeek: React.ReactNode;
   initial: Record<string, string>;
 }) {
   const { value, update, status } = useAutosave({ userId, kind: "weekly_review", day, initial });
@@ -396,6 +402,18 @@ export function WeeklyReview({
         })}
         <p className={s.hint}>Bajar significa usar el medio o el mínimo como objetivo diario; subir, que el completo pasa a ser lo normal.</p>
       </fieldset>
+
+      {/* ---------- Tu semana que viene ---------- */}
+      {nextWeekCritical ? (
+        <div className={s.nextWeek}>
+          <p className={s.reviewLabel}>Tu semana que viene</p>
+          <p className={s.hint}>
+            Marcaste la semana {nextWeekCritical} como complicada. Activa el modo semana difícil antes de que empiece:
+            solo tu ancla será obligatoria.
+          </p>
+          {hardWeek}
+        </div>
+      ) : null}
       <SaveState status={status} />
     </section>
   );

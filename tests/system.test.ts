@@ -23,8 +23,12 @@ const intake: Intake = {
   exerciseDays: "none",
   sleepHours: "7-8",
   quitReason: "all_or_nothing",
-  reviewWeekday: 0,
-  reviewTime: "19:00",
+  freeTimeWeekend: "2-4",
+  criticalWeeks: [2],
+  criticalNote: "Exámenes",
+  worthIt: "Llegar a los exámenes con el temario al día y sin ir siempre cansada",
+  wantsPartner: true,
+  reminderTime: "20:00",
 };
 const plan = generatePlan(intake);
 const START = "2027-01-04";
@@ -40,7 +44,7 @@ describe("contenido de las lecciones", () => {
   });
 
   it("los formularios tienen campos con clave única y etiqueta", () => {
-    expect(FORM_DAYS).toEqual([1, 3, 6, 16, 20, 22, 24, 25]);
+    expect(FORM_DAYS).toEqual([1, 3, 6, 8, 16, 20, 22, 24, 25]);
     for (const l of LESSONS) {
       if (l.action.kind !== "form") continue;
       const keys = l.action.fields.map((f) => f.key);
@@ -69,25 +73,30 @@ describe("contenido de las lecciones", () => {
 
 describe("tu sistema", () => {
   it("antes de escribir nada: objetivo, hábitos y revisión ya están; lo demás pendiente o bloqueado", () => {
-    const pieces = buildSystem({ entries: [], intake, plan, currentDay: 6 });
+    const pieces = buildSystem({ entries: [], intake, plan, start: START, currentDay: 6 });
     const byId = Object.fromEntries(pieces.map((p) => [p.id, p]));
     expect(byId.goal.status).toBe("done");
     expect(byId.goal.items).toEqual([{ label: "Objetivo", text: "Aprobar Estadística" }]);
     expect(byId.habits.items[0]).toEqual({ label: plan.body.name, text: plan.body.schedule });
-    expect(byId.review.items[0].text).toBe("Los domingos a las 19:00");
-    expect(byId.why.status).toBe("pending");
+    expect(byId.review.items[0].text).toBe("Los domingos, durante unos 5 minutos");
+    // El porqué ya trae lo que dijo en el cuestionario («merecerá la pena si…»)
+    expect(byId.why.status).toBe("done");
+    expect(byId.why.items).toEqual([{ label: "Merecerá la pena si…", text: intake.worthIt }]);
+    expect(byId.shutdown.status).toBe("locked");
     expect(byId.bad_days.status).toBe("locked");
   });
 
   it("usa lo escrito en las lecciones y la elección del día 30", () => {
     const pieces = buildSystem({
+      start: START,
       intake,
       plan,
       currentDay: 31,
       entries: [
         { kind: "lesson", day: 3, data: { goal: "Aprobar con un 7", signal: "" } },
         { kind: "lesson", day: 6, data: { body: "Cuando salga de clase, caminaré" } },
-        { kind: "lesson", day: 16, data: { plan: "Si llego sin energía, haré el mínimo" } },
+        { kind: "lesson", day: 8, data: { plan: "Si llego sin energía, haré el mínimo" } },
+        { kind: "lesson", day: 24, data: { level: "Con el mínimo" } },
         { kind: "plan_90", day: 30, data: { choice: "level_up" } },
       ],
     });
@@ -95,7 +104,10 @@ describe("tu sistema", () => {
     expect(byId.goal.items).toEqual([{ label: "Objetivo", text: "Aprobar con un 7" }]);
     expect(byId.habits.items[0].text).toBe("Cuando salga de clase, caminaré");
     expect(byId.habits.items[1].text).toBe(plan.mind.schedule);
-    expect(byId.bad_days.items).toEqual([{ label: "Lo que harás", text: "Si llego sin energía, haré el mínimo" }]);
+    expect(byId.bad_days.items).toEqual([
+      { label: "Lo que harás", text: "Si llego sin energía, haré el mínimo" },
+      { label: "Con qué nivel vuelves", text: "Con el mínimo" },
+    ]);
     expect(byId.plan_90.items[0].text).toBe("Subir de nivel");
     expect(byId.shutdown.status).toBe("pending");
   });
@@ -128,6 +140,7 @@ describe("día del programa y frases nuevas", () => {
       mostDone: "body",
       leastDone: "mind",
       dayOneChange: "Dormir mejor",
+      reviewWeekday: 0,
     });
     expect(phrase).toMatch(/^El día 1 escribiste: «Dormir mejor»\. Llevas 27 días/);
   });

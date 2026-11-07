@@ -17,14 +17,18 @@ export type IntakeRow = {
   exercise_days: string | null;
   sleep_hours: string | null;
   quit_reason: string | null;
-  review_weekday: number;
-  review_time: string;
+  free_time_weekend: string | null;
+  critical_weeks: number[] | null;
+  critical_note: string | null;
+  worth_it: string | null;
+  wants_partner: boolean | null;
+  reminder_time: string | null;
   current_step: number;
   completed_at: string | null;
 };
 
 const INTAKE_COLUMNS =
-  "name, age_range, occupation, free_time, energy, wheel, goal_type, goal_text, neglected_area, exercise_days, sleep_hours, quit_reason, review_weekday, review_time, current_step, completed_at";
+  "name, age_range, occupation, free_time, free_time_weekend, energy, wheel, goal_type, goal_text, neglected_area, exercise_days, sleep_hours, quit_reason, critical_weeks, critical_note, worth_it, wants_partner, reminder_time, current_step, completed_at";
 
 export function rowToDraft(row: IntakeRow): IntakeDraft {
   const d: Record<string, unknown> = {
@@ -40,8 +44,12 @@ export function rowToDraft(row: IntakeRow): IntakeDraft {
     exerciseDays: row.exercise_days,
     sleepHours: row.sleep_hours,
     quitReason: row.quit_reason,
-    reviewWeekday: row.review_weekday,
-    reviewTime: row.review_time?.slice(0, 5),
+    freeTimeWeekend: row.free_time_weekend,
+    criticalWeeks: row.critical_weeks,
+    criticalNote: row.critical_note,
+    worthIt: row.worth_it,
+    wantsPartner: row.wants_partner,
+    reminderTime: row.reminder_time?.slice(0, 5),
   };
   for (const k of Object.keys(d)) if (d[k] === null || d[k] === undefined) delete d[k];
   return d as IntakeDraft;
@@ -61,8 +69,12 @@ export function draftToRow(d: IntakeDraft): Partial<IntakeRow> {
     exercise_days: d.exerciseDays,
     sleep_hours: d.sleepHours,
     quit_reason: d.quitReason,
-    review_weekday: d.reviewWeekday,
-    review_time: d.reviewTime,
+    free_time_weekend: d.freeTimeWeekend,
+    critical_weeks: d.criticalWeeks,
+    critical_note: d.criticalNote,
+    worth_it: d.worthIt,
+    wants_partner: d.wantsPartner,
+    reminder_time: d.reminderTime,
   };
   for (const k of Object.keys(row) as (keyof IntakeRow)[]) if (row[k] === undefined) delete row[k];
   return row;

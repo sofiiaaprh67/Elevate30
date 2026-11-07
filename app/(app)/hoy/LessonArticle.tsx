@@ -5,6 +5,8 @@ import type { ISODate } from "@/lib/domain/program";
 import { weekRows } from "@/lib/domain/review";
 import type { CheckinsByDate } from "@/lib/domain/stats";
 import type { Intake, Plan, Wheel } from "@/lib/domain/types";
+import type { setHardWeek } from "@/lib/data/day";
+import { HardWeekButton } from "./DayMode";
 import { ActionCheck, ActionChoice, ActionForm, ActionText, ActionWheel, WeeklyReview } from "./LessonActions";
 import h from "./hoy.module.css";
 
@@ -21,6 +23,8 @@ export function LessonArticle({
   actionDone,
   entries,
   headingLevel = 2,
+  hardWeekAction,
+  hardWeekActive = false,
 }: {
   userId: string;
   start: ISODate;
@@ -33,6 +37,9 @@ export function LessonArticle({
   actionDone: boolean;
   entries: Partial<Record<EntryKind, Record<string, unknown>>>;
   headingLevel?: 1 | 2;
+  /** Para activar el modo semana difícil desde la lección 16 y la revisión. */
+  hardWeekAction?: typeof setHardWeek;
+  hardWeekActive?: boolean;
 }) {
   const action = lesson.action;
   const review = reviewForDay(day);
@@ -74,7 +81,7 @@ export function LessonArticle({
           </ol>
         </section>
 
-        {lesson.science ? (
+        {lesson.basis?.kind === "study" ? (
           <aside className={h.science} aria-label="Por qué funciona">
             <p className={h.scienceLabel}>
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
@@ -83,9 +90,32 @@ export function LessonArticle({
               </svg>
               Por qué funciona
             </p>
-            <p className={h.scienceText}>{lesson.science.text}</p>
-            <p className={h.scienceSource}>{lesson.science.source}</p>
+            <p className={h.scienceText}>{lesson.basis.text}</p>
+            <a className={h.scienceSource} href={lesson.basis.url} target="_blank" rel="noopener noreferrer">
+              {lesson.basis.source}
+              <span className="sr-only"> (abre el estudio en otra pestaña)</span>
+            </a>
           </aside>
+        ) : lesson.basis?.kind === "practice" ? (
+          <aside className={h.practice} aria-label="Herramienta práctica">
+            <p className={h.practiceLabel}>Herramienta práctica</p>
+            <p className={h.practiceText}>{lesson.basis.text}</p>
+          </aside>
+        ) : null}
+
+        {day === 16 && hardWeekAction ? (
+          <div className={h.inlineHw}>
+            <p>
+              {hardWeekActive
+                ? "Tu modo semana difícil está activo esta semana."
+                : "¿Esta semana ya es complicada? Puedes activarlo ahora mismo."}
+            </p>
+            {hardWeekActive ? null : (
+              <HardWeekButton on action={hardWeekAction}>
+                Activar el modo semana difícil
+              </HardWeekButton>
+            )}
+          </div>
         ) : null}
 
         <div className={h.action}>
@@ -138,6 +168,14 @@ export function LessonArticle({
           review={review}
           plan={plan}
           week={weekRows(start, day, byDate)}
+          nextWeekCritical={day < 28 && intake.criticalWeeks.includes(day / 7 + 1) ? day / 7 + 1 : null}
+          hardWeek={
+            hardWeekAction && !hardWeekActive ? (
+              <HardWeekButton on action={hardWeekAction}>
+                Activar el modo semana difícil
+              </HardWeekButton>
+            ) : null
+          }
           initial={(entries.weekly_review as Record<string, string> | undefined) ?? {}}
         />
       ) : null}

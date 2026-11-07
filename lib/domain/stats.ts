@@ -45,17 +45,35 @@ export function daysDone(byDate: CheckinsByDate, start: ISODate, today: ISODate)
 }
 
 /**
- * Días cumplidos seguidos hasta hoy. Si hoy todavía no está cumplido,
- * cuenta hasta ayer (el día no ha terminado).
+ * Racha flexible: días que cuentan desde el último corte.
+ * Un día en blanco suelto no la rompe; dos seguidos, sí.
+ * Si hoy todavía no cuenta, se mira desde ayer (el día no ha terminado).
  */
 export function streak(byDate: CheckinsByDate, start: ISODate, today: ISODate): number {
   let cursor = isDayDone(byDate[today]) ? today : addDays(today, -1);
   let n = 0;
-  while (daysBetween(start, cursor) >= 0 && isDayDone(byDate[cursor])) {
-    n++;
+  let blanks = 0;
+  while (daysBetween(start, cursor) >= 0) {
+    if (isDayDone(byDate[cursor])) {
+      n++;
+      blanks = 0;
+    } else if (++blanks >= 2) {
+      break;
+    }
     cursor = addDays(cursor, -1);
   }
   return n;
+}
+
+/**
+ * Estado de la racha para avisar a tiempo: "safe" si ayer contó (o hoy ya cuenta),
+ * "at_risk" si ayer quedó en blanco y hoy aún no cuenta (otro día en blanco la rompería).
+ */
+export function streakStatus(byDate: CheckinsByDate, start: ISODate, today: ISODate): "safe" | "at_risk" {
+  if (isDayDone(byDate[today])) return "safe";
+  const yesterday = addDays(today, -1);
+  if (daysBetween(start, yesterday) < 0) return "safe";
+  return isDayDone(byDate[yesterday]) ? "safe" : "at_risk";
 }
 
 /** Check-ins en completo entre el total de check-ins cumplidos (0–100). */
@@ -89,25 +107,58 @@ export function habitByScore(checkins: Checkin[], which: "most" | "least"): Slot
   );
 }
 
-export type Alert = { slot: Slot; kind: "struggling" | "level_up"; text: string };
+export type AlertKind = "hard_week" | "golden" | "struggling" | "level_up";
+export type Alert = { slot?: Slot; kind: AlertKind; text: string };
+
+/** Como mucho 2 avisos al día, para acompañar sin agobiar. */
+export const MAX_ALERTS = 2;
 
 /**
- * Avisos desde el día 4:
- * - 3 días seguidos sin cumplir un hábito (sin check-in o "Hoy no") → bajar al mínimo.
- * - 5 días seguidos en completo → subir el nivel.
+ * Avisos inteligentes, por orden de prioridad (como mucho 2 al día):
+ * 1. La víspera de una semana marcada como crítica → activar el modo semana difícil.
+ * 2. Un hábito con dos "Hoy no" seguidos → regla de oro: hoy, al menos su mínimo.
+ * 3. 3 días seguidos sin cumplir un hábito (desde el día 4) → bajarlo al mínimo.
+ * 4. 5 días seguidos en completo → subir el nivel.
  * Se miran los días anteriores a hoy (hoy aún está en curso); para el
  * aviso de completo también cuenta hoy si ya está en completo.
  */
-export function alerts(byDate: CheckinsByDate, plan: Plan, start: ISODate, today: ISODate, day: number): Alert[] {
-  if (day < 4) return [];
+export function alerts(
+  byDate: CheckinsByDate,
+  plan: Plan,
+  start: ISODate,
+  today: ISODate,
+  day: number,
+  opts: { criticalWeeks?: number[]; hardWeekActive?: boolean } = {},
+): Alert[] {
   const out: Alert[] = [];
   const inProgram = (d: ISODate) => daysBetween(start, d) >= 0;
 
+  // 1. Víspera de una semana crítica (días 7, 14 y 21)
+  const nextWeek = day / 7 + 1;
+  if (Number.isInteger(nextWeek) && nextWeek <= 4 && opts.criticalWeeks?.includes(nextWeek) && !opts.hardWeekActive) {
+    out.push({
+      kind: "hard_week",
+      text: `Mañana empieza tu semana ${nextWeek}, que marcaste como complicada. Activa el modo semana difícil: solo tu ancla será obligatoria.`,
+    });
+  }
+
+  const golden: Alert[] = [];
+  const struggling: Alert[] = [];
+  const levelUp: Alert[] = [];
   for (const slot of SLOTS) {
     const habit = plan[slot];
-    const prev = [1, 2, 3].map((i) => addDays(today, -i));
-    if (prev.every(inProgram) && prev.every((d) => !isDone(byDate[d]?.[slot]))) {
-      out.push({
+    const prev2 = [1, 2].map((i) => addDays(today, -i));
+    if (prev2.every(inProgram) && prev2.every((d) => byDate[d]?.[slot] === "skip")) {
+      golden.push({
+        slot,
+        kind: "golden",
+        text: `«${habit.name}» lleva dos «Hoy no» seguidos. Regla de oro: nunca dos días seguidos sin nada. Hoy, al menos su mínimo: ${lowerFirst(habit.levels.min)}.`,
+      });
+      continue;
+    }
+    const prev3 = [1, 2, 3].map((i) => addDays(today, -i));
+    if (day >= 4 && prev3.every(inProgram) && prev3.every((d) => !isDone(byDate[d]?.[slot]))) {
+      struggling.push({
         slot,
         kind: "struggling",
         text: `Llevas 3 días sin cumplir «${habit.name}». Bájalo unos días al mínimo: ${lowerFirst(habit.levels.min)}.`,
@@ -117,14 +168,14 @@ export function alerts(byDate: CheckinsByDate, plan: Plan, start: ISODate, today
     const end = byDate[today]?.[slot] === "full" ? today : addDays(today, -1);
     const last5 = [0, 1, 2, 3, 4].map((i) => addDays(end, -i));
     if (last5.every(inProgram) && last5.every((d) => byDate[d]?.[slot] === "full")) {
-      out.push({
+      levelUp.push({
         slot,
         kind: "level_up",
         text: `Llevas 5 días en completo con «${habit.name}». Quizá es momento de subir el nivel.`,
       });
     }
   }
-  return out;
+  return [...out, ...golden, ...struggling, ...levelUp].slice(0, MAX_ALERTS);
 }
 
 export function lowerFirst(s: string): string {

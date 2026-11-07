@@ -49,12 +49,11 @@ export function ProgressView({
   const counts = countsBySlot(past);
   const approved = videos.filter((v) => v.status === "approved").length;
   const pending = videos.filter((v) => v.status === "pending").length;
-  const finished = state.kind === "finished";
   const subtitle =
     state.kind === "before"
       ? `Empiezas el ${formatLongDate(start)}.`
       : state.kind === "active"
-        ? `Día ${state.day} de 30. Cada día cumplido suma, también en mínimo.`
+        ? `Día ${state.day} de 30. Un día cuenta si haces al menos un hábito, aunque sea en mínimo.`
         : "Has completado los 30 días.";
 
   return (
@@ -63,11 +62,11 @@ export function ProgressView({
 
       <dl className={p.stats}>
         <div>
-          <dt>{done === 1 ? "día cumplido" : "días cumplidos"}</dt>
+          <dt>{done === 1 ? "día que cuenta" : "días que cuentan"}</dt>
           <dd>{done}</dd>
         </div>
         <div>
-          <dt>de racha</dt>
+          <dt>de racha flexible</dt>
           <dd>{currentStreak}</dd>
         </div>
         <div>
@@ -178,8 +177,8 @@ export function ProgressView({
           <Reward
             icon="founder"
             title="Fundador ELEVATE"
-            description="Haz check-in al menos 25 de los 30 días. El mínimo cuenta."
-            prize="Insignia en la web y descuento en el plan de 90 días"
+            description="Que 25 de tus 30 días cuenten: al menos un hábito, aunque sea en mínimo."
+            prize="Insignia en tu perfil, acceso anticipado y ventajas en el plan de 90 días"
             value={Math.min(done, FOUNDER_GOAL)}
             goal={FOUNDER_GOAL}
             achieved={done >= FOUNDER_GOAL}
@@ -204,11 +203,11 @@ export function ProgressView({
           />
           <Reward
             icon="lock"
-            title="Plan de 90 días"
-            description={finished ? "Ya has terminado ELEVATE 30: tu siguiente paso está listo." : "Se desbloquea al terminar ELEVATE 30."}
+            title="Plan de 90 días completado"
+            description="Al terminar el plan de 90 días, cuando se abra. El día 30 te preguntaremos si quieres seguir."
             prize="Conjunto completo: sudadera, camiseta y pantalón"
-            locked={!finished}
-            achieved={finished}
+            locked
+            achieved={false}
           />
         </div>
       </section>

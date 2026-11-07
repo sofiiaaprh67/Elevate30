@@ -115,10 +115,12 @@ describe("row level security", () => {
   });
 
   it("solo el admin cambia la fecha de inicio y ve la lista", async () => {
-    await as(A, `update settings set start_date = '2030-01-01'`);
-    expect((await db.query<{ d: string }>(`select start_date::text as d from settings`)).rows[0].d).toBe("2027-01-04");
-    await as(ADMIN, `update settings set start_date = '2027-01-11'`);
+    await as(A, `update settings set start_date = '2027-01-04'`);
     expect((await db.query<{ d: string }>(`select start_date::text as d from settings`)).rows[0].d).toBe("2027-01-11");
+    await as(ADMIN, `update settings set start_date = '2027-01-04'`);
+    expect((await db.query<{ d: string }>(`select start_date::text as d from settings`)).rows[0].d).toBe("2027-01-04");
+    // La fecha recomendada tiene que caer dentro de la ventana de inicio
+    await expect(as(ADMIN, `update settings set start_date = '2027-02-01'`)).rejects.toThrow();
     expect(await as(A, `select * from allowed_emails`)).toHaveLength(0);
     expect(await as(ADMIN, `select * from allowed_emails`)).toHaveLength(3);
   });
@@ -131,6 +133,25 @@ describe("row level security", () => {
     await expect(as(A, `update video_submissions set status = 'approved' where user_id = $1`, [A])).rejects.toThrow();
     await as(ADMIN, `update video_submissions set status = 'approved', reviewed_at = now()`);
     expect((await db.query<{ status: string }>(`select status from video_submissions`)).rows[0].status).toBe("approved");
+  });
+
+  it("Día 0: cada persona elige su fecha dentro de la ventana y edita solo su ancla y su compromiso", async () => {
+    await as(B, `select public.set_program_start('2027-01-11')`);
+    expect((await db.query<{ d: string }>(`select program_start::text as d from profiles where id = $1`, [B])).rows[0].d).toBe(
+      "2027-01-11",
+    );
+    await expect(as(B, `select public.set_program_start('2027-02-01')`)).rejects.toThrow();
+    await expect(as(null, `select public.set_program_start('2027-01-11')`)).rejects.toThrow();
+    // No puede cambiarse la fecha directamente (sin pasar por la función)
+    await expect(as(B, `update profiles set program_start = '2027-01-02' where id = $1`, [B])).rejects.toThrow();
+
+    await as(B, `update profiles set anchor_slot = 'goal', committed_at = now() where id = $1`, [B]);
+    // Actualizar el perfil de otra persona no cambia nada
+    await as(B, `update profiles set anchor_slot = 'mind' where id = $1`, [A]);
+    const rows = (await db.query<{ id: string; anchor_slot: string | null }>(`select id, anchor_slot from profiles`)).rows;
+    expect(rows.find((r) => r.id === B)?.anchor_slot).toBe("goal");
+    expect(rows.find((r) => r.id === A)?.anchor_slot).toBeNull();
+    await expect(as(B, `update profiles set anchor_slot = 'nada' where id = $1`, [B])).rejects.toThrow();
   });
 
   it("has_access pasa a false al quitar el email de la lista", async () => {
