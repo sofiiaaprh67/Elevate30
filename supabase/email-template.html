@@ -1,0 +1,28 @@
+<!--
+  Plantilla para Supabase → Authentication → Emails → Templates.
+  Pégala en "Magic link" y también en "Confirm signup".
+  Asunto recomendado: Tu código para entrar en ELEVATE 30
+-->
+<div style="background:#03060C;padding:40px 16px;font-family:Helvetica,Arial,sans-serif;color:#F8FAFC;">
+  <div style="max-width:460px;margin:0 auto;background:#0B1320;border:1px solid #1A2536;border-radius:28px;padding:32px 28px;">
+    <p style="margin:0 0 6px;font-family:'Courier New',monospace;font-size:12px;letter-spacing:3px;color:#94A3B8;">ELEVATE 30</p>
+    <h1 style="margin:0 0 16px;font-size:26px;line-height:1.15;color:#F8FAFC;">Tu código para entrar</h1>
+    <p style="margin:0 0 24px;font-size:16px;line-height:1.5;color:#94A3B8;">
+      Escribe este código en la app o pulsa el botón. Caduca en 1 hora.
+    </p>
+    <p style="margin:0 0 24px;padding:18px 0;text-align:center;font-family:'Courier New',monospace;font-size:34px;font-weight:bold;letter-spacing:10px;color:#F8FAFC;background:#03060C;border:1px solid #24324A;border-radius:16px;">
+      {{ .Token }}
+    </p>
+    <p style="margin:0 0 28px;text-align:center;">
+      <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email"
+         style="display:inline-block;padding:15px 30px;border-radius:9999px;background:#0066FF;color:#FFFFFF;font-size:16px;font-weight:bold;text-decoration:none;">
+        Entrar en ELEVATE 30
+      </a>
+    </p>
+    <p style="margin:0;font-size:13px;line-height:1.5;color:#94A3B8;">
+      Si has añadido la app a la pantalla de inicio del iPhone, usa el código: el botón abre Safari.
+      Si no has pedido este email, puedes ignorarlo.
+    </p>
+  </div>
+  <p style="margin:20px 0 0;text-align:center;font-family:'Courier New',monospace;font-size:11px;letter-spacing:3px;color:#64748B;">PROGRESS IS BUILT.</p>
+</div>

@@ -1,0 +1,61 @@
+.main {
+  width: 100%;
+  max-width: calc(var(--maxw) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: calc(20px + var(--safe-top)) var(--gutter) calc(var(--nav-h) + 40px + var(--safe-bottom));
+  display: grid;
+  gap: var(--s-4);
+  align-content: start;
+}
+
+.head {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-4) 0 var(--s-2);
+}
+
+.countdown {
+  display: grid;
+  gap: var(--s-4);
+}
+.countNum {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 72px;
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+.countLabel {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+
+.list {
+  display: grid;
+  gap: var(--s-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-3) 0;
+  border-top: 1px solid var(--steel);
+  font-size: 15px;
+}
+.row:first-child {
+  border-top: 0;
+}
+.row dt {
+  color: var(--ash);
+}
+.row dd {
+  margin: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}

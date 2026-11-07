@@ -1,0 +1,186 @@
+.card {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-6) var(--s-5);
+  border-radius: var(--r-card);
+  background: var(--graphite);
+  box-shadow: var(--line);
+}
+.cardTitle,
+.sectionTitle {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+.section {
+  display: grid;
+  gap: var(--s-3);
+}
+.sectionTitle {
+  padding: var(--s-2) var(--s-1) 0;
+}
+
+.badge {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--r-pill);
+  background: rgba(0, 217, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(0, 217, 255, 0.5);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+.badge svg {
+  width: 16px;
+  height: 16px;
+}
+
+.list {
+  margin: 0;
+  display: grid;
+}
+.list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-3) 0;
+  border-top: 1px solid var(--steel);
+  font-size: 15px;
+}
+.list > div:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.list dt {
+  color: var(--ash);
+}
+.list dd {
+  margin: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.goalType {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+.goalText {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* Revisión */
+.form {
+  display: grid;
+  gap: var(--s-4);
+}
+.fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-2);
+}
+.label {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0;
+}
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+.day {
+  min-height: 44px;
+  border-radius: 12px;
+  background: var(--obsidian);
+  box-shadow: var(--line-2);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--porcelain);
+}
+.day[aria-checked="true"] {
+  background: var(--blue);
+  box-shadow: none;
+  color: var(--white);
+}
+.row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+.timeLabel {
+  display: grid;
+  gap: var(--s-2);
+}
+.time {
+  min-height: 48px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--r-field);
+  background: var(--obsidian);
+  box-shadow: var(--line-2);
+  color: var(--porcelain);
+  font-family: var(--font-mono);
+  font-size: 17px;
+  color-scheme: dark;
+}
+.time:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--cyan);
+}
+.ok {
+  font-size: 14px;
+  color: var(--cyan);
+}
+.error {
+  font-size: 14px;
+  color: var(--danger);
+}
+
+/* Instalar */
+.install {
+  display: grid;
+  gap: var(--s-4);
+}
+.install > div {
+  padding: var(--s-4);
+  border-radius: var(--r-field);
+  background: var(--obsidian);
+  box-shadow: var(--line);
+}
+.platform {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: var(--s-2);
+}
+.install ol {
+  margin: 0;
+  padding-left: 1.2em;
+  display: grid;
+  gap: 6px;
+  font-size: 15px;
+  color: var(--ash);
+}
+.install strong {
+  color: var(--porcelain);
+  font-weight: 600;
+}
