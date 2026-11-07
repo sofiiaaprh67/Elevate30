@@ -35,6 +35,7 @@ export function Checkin({
   yesterday,
   light,
   hardWeek,
+  onSaved,
 }: {
   userId: string;
   date: ISODate;
@@ -44,6 +45,8 @@ export function Checkin({
   yesterday: DayCheckins;
   light: boolean;
   hardWeek: boolean;
+  /** Tras guardar (p. ej., publicar hitos en la comunidad). */
+  onSaved?: () => Promise<void>;
 }) {
   const [values, setValues] = useState<DayCheckins>(initial);
   const [error, setError] = useState<string | null>(null);
@@ -63,6 +66,8 @@ export function Checkin({
     if (saveError) {
       setValues((v) => ({ ...v, [slot]: previous }));
       setError("No se ha guardado el check-in. Revisa tu conexión e inténtalo de nuevo.");
+    } else if (onSaved) {
+      void onSaved().catch(() => {});
     }
   }
 

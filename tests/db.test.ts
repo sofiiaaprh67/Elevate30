@@ -154,6 +154,70 @@ describe("row level security", () => {
     await expect(as(B, `update profiles set anchor_slot = 'nada' where id = $1`, [B])).rejects.toThrow();
   });
 
+  it("comunidad: hace falta perfil para publicar y la cohorte ve las publicaciones", async () => {
+    await expect(as(A, `insert into posts (user_id, body) values ($1, 'Hola')`, [A])).rejects.toThrow();
+    await as(A, `insert into community_profiles (user_id, alias, norms_accepted_at) values ($1, 'Ana', now())`, [A]);
+    await as(B, `insert into community_profiles (user_id, alias, visibility, norms_accepted_at) values ($1, 'Bea', 'none', now())`, [B]);
+    await as(A, `insert into posts (user_id, body) values ($1, 'Día 1 hecho')`, [A]);
+    await as(B, `insert into posts (user_id, body) values ($1, 'Vuelvo tras un día en blanco')`, [B]);
+    expect(await as(A, `select * from posts`)).toHaveLength(2);
+    // Nadie publica en nombre de otra persona
+    await expect(as(A, `insert into posts (user_id, body) values ($1, 'falso')`, [B])).rejects.toThrow();
+    // Sin texto, foto ni enlace no hay publicación
+    await expect(as(A, `insert into posts (user_id, body) values ($1, '  ')`, [A])).rejects.toThrow();
+  });
+
+  it("comunidad: reacciones de ánimo y comentarios", async () => {
+    const [post] = await as<{ id: number }>(A, `select id from posts where body = 'Vuelvo tras un día en blanco'`);
+    await as(A, `insert into reactions (post_id, user_id, kind) values ($1, $2, 'cuenta')`, [post.id, A]);
+    await expect(as(A, `insert into reactions (post_id, user_id, kind) values ($1, $2, 'like')`, [post.id, A])).rejects.toThrow();
+    await as(A, `insert into comments (post_id, user_id, body) values ($1, $2, '¡Bien!')`, [post.id, A]);
+    expect(await as(B, `select * from comments`)).toHaveLength(1);
+  });
+
+  it("comunidad: la privacidad decide qué progreso se ve", async () => {
+    await as(A, `insert into checkins (user_id, date, slot, level) values ($1, '2027-01-05', 'mind', 'min')`, [A]);
+    const ana = await as<{ date: string; level: string }>(B, `select date::text, level from community_progress($1) order by date`, [A]);
+    expect(ana).toEqual([
+      { date: "2027-01-04", level: "full" },
+      { date: "2027-01-05", level: "min" },
+    ]);
+    // Bea eligió "nada": ni su progreso ni su fecha de inicio
+    expect(await as(A, `select * from community_progress($1)`, [B])).toHaveLength(0);
+    const members = await as<{ alias: string; program_start: string | null }>(A, `select alias, program_start from community_members()`);
+    expect(members.find((m) => m.alias === "Bea")?.program_start).toBeNull();
+  });
+
+  it("comunidad: silenciar oculta solo para quien silencia; bloquear, en los dos sentidos", async () => {
+    await as(A, `insert into community_mutes (user_id, muted_id) values ($1, $2)`, [A, B]);
+    expect(await as(A, `select * from posts where user_id = $1`, [B])).toHaveLength(0);
+    await as(A, `delete from community_mutes where user_id = $1`, [A]);
+    await as(A, `insert into community_blocks (user_id, blocked_id) values ($1, $2)`, [A, B]);
+    expect(await as(A, `select * from posts where user_id = $1`, [B])).toHaveLength(0);
+    expect(await as(B, `select * from posts where user_id = $1`, [A])).toHaveLength(0);
+    expect(await as(B, `select * from community_members() where user_id = $1`, [A])).toHaveLength(0);
+    expect(await as(B, `select * from community_progress($1)`, [A])).toHaveLength(0);
+    await as(A, `delete from community_blocks where user_id = $1`, [A]);
+  });
+
+  it("comunidad: denuncias y moderación", async () => {
+    const [post] = await as<{ id: number }>(B, `select id from posts where body = 'Día 1 hecho'`);
+    await as(B, `insert into reports (reporter_id, post_id, reason) values ($1, $2, 'spam')`, [B, post.id]);
+    await expect(
+      as(B, `insert into reports (reporter_id, post_id, reason, status) values ($1, $2, 'spam', 'hidden')`, [B, post.id]),
+    ).rejects.toThrow();
+    expect(await as(A, `select * from reports`)).toHaveLength(0);
+    // Solo el admin oculta
+    await as(B, `update posts set hidden_at = now() where id = $1`, [post.id]);
+    expect(await as(B, `select * from posts where id = $1`, [post.id])).toHaveLength(1);
+    await as(ADMIN, `update posts set hidden_at = now() where id = $1`, [post.id]);
+    await as(ADMIN, `update reports set status = 'hidden', resolution = 'Era spam', resolved_at = now()`);
+    expect(await as(B, `select * from posts where id = $1`, [post.id])).toHaveLength(0);
+    // Quien publicó sigue viendo su publicación oculta
+    expect(await as(A, `select * from posts where id = $1`, [post.id])).toHaveLength(1);
+    expect((await as<{ resolution: string }>(B, `select resolution from reports`))[0].resolution).toBe("Era spam");
+  });
+
   it("has_access pasa a false al quitar el email de la lista", async () => {
     expect((await as<{ v: boolean }>(A, `select public.has_access() as v`))[0].v).toBe(true);
     await db.exec(`delete from allowed_emails where email = 'ana@test.com'`);

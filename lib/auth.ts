@@ -18,6 +18,8 @@ export type CurrentUser = {
   healthConsentAt: string | null;
   /** Último día del modo semana difícil, si está activo. */
   hardWeekUntil: string | null;
+  /** Tiene perfil en la comunidad (y ha aceptado sus normas). */
+  communityJoined: boolean;
 };
 
 /** Usuario verificado (firma del JWT comprobada) o null. */
@@ -39,13 +41,14 @@ export const requireUser = cache(async (): Promise<CurrentUser> => {
   if (!userId) redirect("/entrar");
 
   const supabase = await createClient();
-  const [{ data: profile }, { data: access }] = await Promise.all([
+  const [{ data: profile }, { data: access }, { data: community }] = await Promise.all([
     supabase
       .from("profiles")
       .select("id, email, role, program_start, anchor_slot, committed_at, health_consent_at, hard_week_until")
       .eq("id", userId)
       .maybeSingle(),
     supabase.rpc("has_access"),
+    supabase.from("community_profiles").select("user_id").eq("user_id", userId).maybeSingle(),
   ]);
 
   if (!profile || access !== true) {
@@ -62,6 +65,7 @@ export const requireUser = cache(async (): Promise<CurrentUser> => {
     committedAt: profile.committed_at ?? null,
     healthConsentAt: profile.health_consent_at ?? null,
     hardWeekUntil: profile.hard_week_until ?? null,
+    communityJoined: Boolean(community),
   };
 });
 

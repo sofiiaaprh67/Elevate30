@@ -31,8 +31,8 @@ export default async function PlanPage() {
       anchorPicker={<AnchorPicker plan={plan} value={user.anchorSlot} action={setAnchor} />}
       dayZero={dayZero}
       canSwap={day <= 4}
-      cta={dayZero ? "Seguir: tu compromiso" : day >= 1 ? "Ir a hoy" : "Volver"}
-      ctaHref={dayZero ? "/compromiso" : "/hoy"}
+      cta={dayZero ? "Seguir" : day >= 1 ? "Ir a hoy" : "Volver"}
+      ctaHref={dayZero ? (user.communityJoined ? "/compromiso" : "/unirse") : "/hoy"}
       swap={(slot, habitName) => <SwapHabitButton slot={slot} habitName={habitName} />}
     />
   );

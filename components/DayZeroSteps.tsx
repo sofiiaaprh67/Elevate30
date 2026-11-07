@@ -1,13 +1,13 @@
 import s from "./DayZeroSteps.module.css";
 
-const STEPS = ["Tu fecha", "Cuestionario", "Tu plan", "Compromiso"];
+const STEPS = ["Fecha", "Cuestionario", "Plan", "Comunidad", "Compromiso"];
 
-/** Los 4 pasos del Día 0, con el actual marcado. */
-export function DayZeroSteps({ current }: { current: 1 | 2 | 3 | 4 }) {
+/** Los 5 pasos del Día 0, con el actual marcado. */
+export function DayZeroSteps({ current }: { current: 1 | 2 | 3 | 4 | 5 }) {
   return (
     <nav className={s.wrap} aria-label="Pasos del Día 0">
       <p className={s.label}>
-        Día 0 <span className={s.of}>Paso {current} de 4</span>
+        Día 0 <span className={s.of}>Paso {current} de 5</span>
       </p>
       <ol className={s.steps}>
         {STEPS.map((name, i) => {

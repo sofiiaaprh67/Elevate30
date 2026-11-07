@@ -298,3 +298,69 @@
 .inlineRow .input {
   max-width: 220px;
 }
+
+/* ---------- Moderación de la comunidad ---------- */
+.muted {
+  font-size: 14px;
+  color: var(--ash);
+}
+.reports {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-3);
+}
+.report {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  border-radius: var(--r-field);
+  box-shadow: inset 0 0 0 1px var(--steel-2);
+}
+.reportHead {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-3);
+  font-size: 14px;
+}
+.reportHead span {
+  color: var(--ash);
+}
+.reportHead span[data-late] {
+  color: var(--danger);
+  font-weight: 600;
+}
+.reportContent {
+  margin: 0;
+  padding: var(--s-3) var(--s-4);
+  border-left: 3px solid var(--steel-2);
+  font-size: 15px;
+  white-space: pre-line;
+}
+.reportContent footer {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--ash);
+}
+.reportActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.hideBtn,
+.dismissBtn {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: var(--r-pill);
+  font-weight: 600;
+  font-size: 14px;
+}
+.hideBtn {
+  background: var(--danger);
+  color: var(--ink);
+}
+.dismissBtn {
+  box-shadow: inset 0 0 0 1px var(--steel-2);
+  color: var(--porcelain);
+}

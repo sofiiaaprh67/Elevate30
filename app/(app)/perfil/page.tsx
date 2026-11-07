@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { signOut } from "@/app/entrar/actions";
 import { requireUser } from "@/lib/auth";
 import { getIntake, getPlan } from "@/lib/data/intake";
+import { CommunitySettings } from "@/components/community/CommunitySettings";
+import { getCommunityProfile, getMembers, getMutedAndBlocked, getMyReports } from "@/lib/data/community";
+import { saveCommunityProfile, setBlocked, setMuted } from "@/lib/data/community-actions";
 import { getCheckins } from "@/lib/data/progress";
 import { FOUNDER_GOAL } from "@/lib/domain/calendar";
 import { toIntake } from "@/lib/domain/intake";
@@ -18,11 +21,15 @@ export const metadata: Metadata = { title: "Perfil" };
 
 export default async function PerfilPage() {
   const user = await requireUser();
-  const [intakeData, plan, checkins, start] = await Promise.all([
+  const [intakeData, plan, checkins, start, communityProfile, members, hidden, reports] = await Promise.all([
     getIntake(user.id),
     getPlan(user.id),
     getCheckins(user.id),
     getStartDate(user.id),
+    getCommunityProfile(user.id),
+    getMembers(),
+    getMutedAndBlocked(user.id),
+    getMyReports(user.id),
   ]);
   const intake = intakeData ? toIntake(intakeData.draft) : null;
   if (!intake || !plan) redirect("/cuestionario");
@@ -41,6 +48,20 @@ export default async function PerfilPage() {
         reviewWeekday: weekdayOf(dateForDay(start, 7)),
         canChangeDate: start > todayInMadrid(),
       }}
+      community={
+        communityProfile ? (
+          <CommunitySettings
+            userId={user.id}
+            profile={communityProfile}
+            avatarUrl={members.get(user.id)?.avatarUrl ?? null}
+            muted={hidden.muted}
+            blocked={hidden.blocked}
+            names={members}
+            reports={reports}
+            actions={{ save: saveCommunityProfile, setMuted, setBlocked }}
+          />
+        ) : null
+      }
       reminderForm={<ReminderForm time={intake.reminderTime} action={updateReminder} />}
       signOut={
         <form action={signOut}>

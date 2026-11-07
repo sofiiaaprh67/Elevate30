@@ -58,7 +58,11 @@ export function TodayView({
   /** Lección de ayer que quedó esperando por "Hoy voy justo". */
   pendingLesson: { day: number; title: string; href: string } | null;
   /** Server Actions (se pasan como props para poder previsualizar sin base de datos). */
-  actions: { setLightDay: typeof setLightDay; setHardWeek: typeof setHardWeek };
+  actions: {
+    setLightDay: typeof setLightDay;
+    setHardWeek: typeof setHardWeek;
+    publishMilestones?: () => Promise<void>;
+  };
 }) {
   const lesson = lessonForDay(day)!;
   const byDate = groupByDate(checkins);
@@ -142,6 +146,7 @@ export function TodayView({
         light={light}
         hardWeek={hardWeek}
         yesterday={byDate[addDays(today, -1)] ?? {}}
+        onSaved={actions.publishMilestones}
         initial={Object.fromEntries(checkins.filter((c) => c.date === today).map((c) => [c.slot, c.level]))}
       />
 

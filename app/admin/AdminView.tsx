@@ -16,6 +16,8 @@ export function AdminView({
   rows,
   allowed,
   videos,
+  moderation,
+  pendingReports = 0,
   forms,
 }: {
   state: ProgramState;
@@ -23,6 +25,9 @@ export function AdminView({
   rows: ParticipantRow[];
   allowed: AllowedEmail[];
   videos: PendingVideo[];
+  /** Panel de denuncias de la comunidad. */
+  moderation?: ReactNode;
+  pendingReports?: number;
   forms: {
     addEmails: ReactNode;
     startDate: ReactNode;
@@ -124,6 +129,16 @@ export function AdminView({
           <p className="muted">Todavía no ha entrado nadie.</p>
         )}
       </section>
+
+      {/* ---------- Comunidad ---------- */}
+      {moderation ? (
+        <section className={s.card} aria-labelledby="mod-title">
+          <h2 className={s.cardTitle} id="mod-title">
+            Denuncias de la comunidad{pendingReports ? ` (${pendingReports})` : ""}
+          </h2>
+          {moderation}
+        </section>
+      ) : null}
 
       {/* ---------- Vídeos ---------- */}
       <section className={s.card} aria-labelledby="videos-title">

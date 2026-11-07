@@ -19,6 +19,7 @@ export function ProfileView({
   plan,
   program,
   reminderForm,
+  community,
   signOut,
 }: {
   email: string;
@@ -28,6 +29,8 @@ export function ProfileView({
   plan: Plan;
   program: { startText: string; reviewWeekday: number; canChangeDate: boolean };
   reminderForm: ReactNode;
+  /** Ajustes de la comunidad. */
+  community?: ReactNode;
   signOut: ReactNode;
 }) {
   return (
@@ -104,6 +107,14 @@ export function ProfileView({
           {reminderForm}
         </div>
       </section>
+
+      {/* ---------- Comunidad ---------- */}
+      {community ? (
+        <section aria-labelledby="community-title">
+          <SectionTitle id="community-title">Tu perfil en la comunidad</SectionTitle>
+          <div className={p.panel}>{community}</div>
+        </section>
+      ) : null}
 
       {/* ---------- Instalar ---------- */}
       <section aria-labelledby="install-title">

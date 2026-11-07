@@ -18,6 +18,7 @@ export default async function Home() {
       programStart: user.programStart,
       intakeCompleted: Boolean(intake?.completed_at),
       anchorSlot: user.anchorSlot,
+      communityJoined: user.communityJoined,
       committedAt: user.committedAt,
     }) ?? "/hoy",
   );

@@ -26,6 +26,18 @@ const ITEMS: { href: string; label: string; match?: string[]; icon: React.ReactN
     ),
   },
   {
+    href: "/comunidad",
+    label: "Comunidad",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="9" cy="8.5" r="3" />
+        <path d="M3.5 19c.9-3 3-4.5 5.5-4.5s4.6 1.5 5.5 4.5" />
+        <circle cx="16.5" cy="9.5" r="2.4" />
+        <path d="M15.5 14.6c2.3-.3 4.3.9 5 3.4" />
+      </svg>
+    ),
+  },
+  {
     href: "/sistema",
     label: "Sistema",
     match: ["/sistema", "/lecciones"],

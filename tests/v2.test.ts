@@ -6,10 +6,17 @@ const START = "2027-01-11";
 
 describe("Día 0", () => {
   it("lleva a cada persona al paso que le falta", () => {
-    const base = { programStart: START, intakeCompleted: true, anchorSlot: "goal", committedAt: "2027-01-10" };
+    const base = {
+      programStart: START,
+      intakeCompleted: true,
+      anchorSlot: "goal",
+      communityJoined: true,
+      committedAt: "2027-01-10",
+    };
     expect(onboardingPath({ ...base, programStart: null })).toBe("/empezar");
     expect(onboardingPath({ ...base, intakeCompleted: false })).toBe("/cuestionario");
     expect(onboardingPath({ ...base, anchorSlot: null })).toBe("/plan");
+    expect(onboardingPath({ ...base, communityJoined: false })).toBe("/unirse");
     expect(onboardingPath({ ...base, committedAt: null })).toBe("/compromiso");
     expect(onboardingPath(base)).toBeNull();
   });
@@ -31,5 +38,26 @@ describe("modo semana difícil", () => {
     expect(hardWeekEnd(START, 14)).toBe("2027-01-31"); // día 21
     expect(hardWeekEnd(START, 28)).toBe("2027-02-09"); // día 30
     expect(hardWeekEnd(START, 29)).toBe("2027-02-09");
+  });
+});
+
+import { milestonesFor } from "@/lib/domain/milestones";
+import { groupByDate, type Checkin } from "@/lib/domain/stats";
+
+describe("hitos de la comunidad", () => {
+  const d = (n: number) => `2027-01-${String(10 + n).padStart(2, "0")}`;
+  const ci = (n: number, level: Checkin["level"]): Checkin => ({ date: d(n), slot: "body", level });
+
+  it("celebra el primer mínimo, la vuelta tras un día en blanco y la semana completada", () => {
+    const by = groupByDate([ci(1, "full"), ci(2, "half"), ci(3, "skip"), ci(4, "min"), ci(5, "full"), ci(6, "full"), ci(7, "half")]);
+    const keys = (n: number) => milestonesFor(by, START, d(n)).map((m) => m.key);
+    expect(keys(2)).toEqual([]);
+    expect(keys(4)).toEqual(["first_min", "comeback_2027-01-14"]);
+    expect(keys(5)).toEqual(["first_min"]);
+    expect(keys(7)).toEqual(["first_min", "week_1"]);
+  });
+
+  it("antes de empezar no hay hitos", () => {
+    expect(milestonesFor({}, START, "2027-01-01")).toEqual([]);
   });
 });

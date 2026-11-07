@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { PillLink } from "@/components/ui/Pill";
 import { lessonForDay } from "@/content/lessons";
 import { requireUser } from "@/lib/auth";
+import { publishMilestones } from "@/lib/data/community-actions";
 import { setHardWeek, setLightDay } from "@/lib/data/day";
 import { getIntake, getPlan } from "@/lib/data/intake";
 import { getCheckins, getEntries, getLessonDone } from "@/lib/data/progress";
@@ -88,7 +89,7 @@ export default async function HoyPage({ searchParams }: { searchParams: Promise<
           ? { day: yesterdayLesson.day, title: yesterdayLesson.title, href: `/lecciones/${yesterdayLesson.day}` }
           : null
       }
-      actions={{ setLightDay, setHardWeek }}
+      actions={{ setLightDay, setHardWeek, publishMilestones }}
     />
   );
 }

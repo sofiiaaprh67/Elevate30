@@ -36,7 +36,7 @@ export function CommitView({
 
   return (
     <div className={s.wrap}>
-      <DayZeroSteps current={4} />
+      <DayZeroSteps current={5} />
 
       <section className={s.card} aria-labelledby="commit-title">
         <h1 className={s.kicker} id="commit-title">

@@ -13,7 +13,7 @@ export default async function CompromisoPage() {
   const user = await requireUser();
   if (user.committedAt) redirect("/hoy");
   const [intake, plan] = await Promise.all([getIntake(user.id), getPlan(user.id)]);
-  if (!user.programStart || !intake?.completed || !plan || !user.anchorSlot) redirect("/");
+  if (!user.programStart || !intake?.completed || !plan || !user.anchorSlot || !user.communityJoined) redirect("/");
 
   const anchor = plan[user.anchorSlot];
   return (

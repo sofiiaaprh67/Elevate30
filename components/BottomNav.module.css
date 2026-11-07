@@ -14,7 +14,7 @@
   padding: 6px;
   max-width: 420px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 4px;
   border-radius: var(--r-nav);
   background: rgba(7, 12, 22, 0.82);
@@ -31,7 +31,7 @@
   min-height: 52px;
   border-radius: 14px;
   color: var(--ash);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   transition:
     color 0.2s,

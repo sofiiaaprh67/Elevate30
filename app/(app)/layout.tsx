@@ -15,6 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     programStart: user.programStart,
     intakeCompleted: Boolean(intake?.completed_at),
     anchorSlot: user.anchorSlot,
+    communityJoined: user.communityJoined,
     committedAt: user.committedAt,
   });
   if (pending) redirect(pending);
