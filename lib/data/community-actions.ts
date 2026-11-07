@@ -130,7 +130,7 @@ export async function toggleReaction(postId: number, kind: ReactionKind, on: boo
   if (!REACTIONS.includes(kind)) return { ok: false, error: "Reacción no válida." };
   const supabase = await createClient();
   const { error } = on
-    ? await supabase.from("reactions").upsert({ post_id: postId, user_id: user.id, kind }, { onConflict: "post_id,user_id,kind" })
+    ? await supabase.from("reactions").upsert({ post_id: postId, user_id: user.id, kind }, { onConflict: "post_id,user_id,kind", ignoreDuplicates: true })
     : await supabase.from("reactions").delete().eq("post_id", postId).eq("user_id", user.id).eq("kind", kind);
   if (error) return { ok: false, error: "No se ha podido guardar." };
   revalidateCommunity();
@@ -168,7 +168,7 @@ export async function setMuted(otherId: string, on: boolean): Promise<ActionResu
   if (otherId === user.id) return { ok: false, error: "No puedes silenciarte." };
   const supabase = await createClient();
   const { error } = on
-    ? await supabase.from("community_mutes").upsert({ user_id: user.id, muted_id: otherId }, { onConflict: "user_id,muted_id" })
+    ? await supabase.from("community_mutes").upsert({ user_id: user.id, muted_id: otherId }, { onConflict: "user_id,muted_id", ignoreDuplicates: true })
     : await supabase.from("community_mutes").delete().eq("user_id", user.id).eq("muted_id", otherId);
   if (error) return { ok: false, error: "No se ha podido guardar." };
   revalidateCommunity();
@@ -183,7 +183,7 @@ export async function setBlocked(otherId: string, on: boolean): Promise<ActionRe
   const { error } = on
     ? await supabase
         .from("community_blocks")
-        .upsert({ user_id: user.id, blocked_id: otherId }, { onConflict: "user_id,blocked_id" })
+        .upsert({ user_id: user.id, blocked_id: otherId }, { onConflict: "user_id,blocked_id", ignoreDuplicates: true })
     : await supabase.from("community_blocks").delete().eq("user_id", user.id).eq("blocked_id", otherId);
   if (error) return { ok: false, error: "No se ha podido guardar." };
   revalidateCommunity();

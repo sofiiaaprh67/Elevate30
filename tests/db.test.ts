@@ -170,6 +170,11 @@ describe("row level security", () => {
   it("comunidad: reacciones de ánimo y comentarios", async () => {
     const [post] = await as<{ id: number }>(A, `select id from posts where body = 'Vuelvo tras un día en blanco'`);
     await as(A, `insert into reactions (post_id, user_id, kind) values ($1, $2, 'cuenta')`, [post.id, A]);
+    // Reaccionar dos veces no falla (la app usa "insertar si no existe", sin permiso de editar)
+    await as(A, `insert into reactions (post_id, user_id, kind) values ($1, $2, 'cuenta') on conflict do nothing`, [post.id, A]);
+    await expect(
+      as(A, `insert into reactions (post_id, user_id, kind) values ($1, $2, 'cuenta') on conflict (post_id, user_id, kind) do update set kind = 'cuenta'`, [post.id, A]),
+    ).rejects.toThrow();
     await expect(as(A, `insert into reactions (post_id, user_id, kind) values ($1, $2, 'like')`, [post.id, A])).rejects.toThrow();
     await as(A, `insert into comments (post_id, user_id, body) values ($1, $2, '¡Bien!')`, [post.id, A]);
     expect(await as(B, `select * from comments`)).toHaveLength(1);
