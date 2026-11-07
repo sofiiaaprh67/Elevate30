@@ -14,11 +14,8 @@
   gap: var(--s-3);
 }
 .slot {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--cyan);
 }
 .when {
@@ -53,22 +50,25 @@
 .levels {
   list-style: none;
   margin: var(--s-2) 0 0;
-  padding: 0;
+  padding: 4px 16px;
+  border-radius: var(--r-field);
+  background: var(--obsidian);
+  box-shadow: var(--line);
 }
 .levels li {
   display: grid;
-  grid-template-columns: auto 72px 1fr;
+  grid-template-columns: auto 64px 1fr;
   align-items: center;
   gap: var(--s-3);
   padding: 12px 0;
-  border-top: 1px solid var(--steel);
   font-size: 15px;
 }
+.levels li + li {
+  border-top: 1px solid var(--steel);
+}
 .levelName {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--ash);
 }
 .levelText {

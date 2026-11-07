@@ -1,0 +1,32 @@
+.strip {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.step {
+  display: grid;
+  gap: 8px;
+}
+.bar {
+  height: 4px;
+  border-radius: 4px;
+  background: var(--steel-2);
+}
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ash);
+}
+.step[data-state="done"] .bar {
+  background: var(--blue);
+  opacity: 0.55;
+}
+.step[data-state="now"] .bar {
+  background: var(--brand-grad);
+}
+.step[data-state="now"] .label {
+  color: var(--porcelain);
+}

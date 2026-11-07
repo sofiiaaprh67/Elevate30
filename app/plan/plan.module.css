@@ -47,22 +47,15 @@
   gap: var(--s-2);
 }
 .tags li {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 8px 14px;
+  padding: 7px 14px;
   border-radius: var(--r-pill);
   background: rgba(14, 24, 40, 0.7);
   box-shadow: var(--line-2);
   font-size: 14px;
   font-weight: 600;
 }
-.tags span {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+.lead {
+  font-size: 15px;
   color: var(--ash);
 }
 .cards {

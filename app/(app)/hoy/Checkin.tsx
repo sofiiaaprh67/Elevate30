@@ -2,12 +2,12 @@
 
 import { useRef, useState } from "react";
 import { LevelIcon } from "@/components/LevelIcon";
-import { LEVEL_LABELS, SLOT_LABELS } from "@/content/labels";
+import { LEVEL_LABELS } from "@/content/labels";
 import type { ISODate } from "@/lib/domain/program";
 import type { DayCheckins } from "@/lib/domain/stats";
 import { SLOTS, type Level, type Plan, type Slot } from "@/lib/domain/types";
 import { createClient } from "@/lib/supabase/client";
-import s from "./hoy.module.css";
+import s from "./checkin.module.css";
 
 const LEVELS: Level[] = ["full", "half", "min", "skip"];
 
@@ -42,18 +42,25 @@ export function Checkin({
 
   return (
     <section className={s.card} aria-labelledby="checkin-title">
-      <div className={s.cardHead}>
-        <h2 className={s.cardTitle} id="checkin-title">
-          Check-in de hoy
+      <header className={s.head}>
+        <h2 className={s.title} id="checkin-title">
+          Tu check-in
         </h2>
-        <span className={s.counter} aria-label={`${done} de 3 hábitos registrados`}>
-          {done}/3
-        </span>
-      </div>
+        <p className={s.count} aria-live="polite">
+          <span className={s.dots} aria-hidden="true">
+            {SLOTS.map((slot) => (
+              <span key={slot} data-on={values[slot] ? "" : undefined} />
+            ))}
+          </span>
+          {done === 3 ? "Hecho" : `${done} de 3`}
+        </p>
+      </header>
 
-      {SLOTS.map((slot) => (
-        <HabitCheckin key={slot} slot={slot} plan={plan} value={values[slot]} onChoose={(l) => choose(slot, l)} />
-      ))}
+      <div className={s.list}>
+        {SLOTS.map((slot) => (
+          <HabitRow key={slot} slot={slot} plan={plan} value={values[slot]} onChoose={(l) => choose(slot, l)} />
+        ))}
+      </div>
 
       {error ? (
         <p className={s.error} role="alert">
@@ -64,7 +71,7 @@ export function Checkin({
   );
 }
 
-function HabitCheckin({
+function HabitRow({
   slot,
   plan,
   value,
@@ -78,6 +85,7 @@ function HabitCheckin({
   const habit = plan[slot];
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const labelId = `ci-${slot}`;
+  const index = value ? LEVELS.indexOf(value) : -1;
 
   function onKeyDown(e: React.KeyboardEvent, i: number) {
     const delta = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
@@ -88,15 +96,26 @@ function HabitCheckin({
     onChoose(LEVELS[n]);
   }
 
-  const levelText = value === "skip" ? "Mañana vuelves. Un día no rompe nada." : value ? habit.levels[value] : null;
+  const detail = value === "skip" ? "Mañana vuelves. Un día no rompe nada." : value ? habit.levels[value] : habit.schedule;
 
   return (
-    <div className={s.habit}>
-      <p className={s.habitHead} id={labelId}>
-        <span className={s.habitSlot}>{SLOT_LABELS[slot]}</span>
-        <span className={s.habitName}>{habit.name}</span>
-      </p>
-      <div className={s.levels} role="radiogroup" aria-labelledby={labelId}>
+    <div className={s.row}>
+      <div className={s.rowHead}>
+        <p className={s.name} id={labelId}>
+          {habit.name}
+        </p>
+        <p className={s.detail} data-chosen={value ? "" : undefined} aria-live="polite">
+          {detail}
+        </p>
+      </div>
+      <div
+        className={s.seg}
+        role="radiogroup"
+        aria-labelledby={labelId}
+        data-level={value}
+        style={{ "--idx": Math.max(index, 0) } as React.CSSProperties}
+      >
+        <span className={s.thumb} data-visible={index >= 0 || undefined} aria-hidden="true" />
         {LEVELS.map((level, i) => {
           const checked = value === level;
           return (
@@ -109,20 +128,16 @@ function HabitCheckin({
               role="radio"
               aria-checked={checked}
               tabIndex={checked || (!value && i === 0) ? 0 : -1}
-              className={s.level}
-              data-level={level}
+              className={s.option}
               onClick={() => onChoose(level)}
               onKeyDown={(e) => onKeyDown(e, i)}
             >
-              <LevelIcon level={level} size={16} />
+              <LevelIcon level={level} size={14} />
               <span>{LEVEL_LABELS[level]}</span>
             </button>
           );
         })}
       </div>
-      <p className={s.levelText} aria-live="polite">
-        {levelText}
-      </p>
     </div>
   );
 }

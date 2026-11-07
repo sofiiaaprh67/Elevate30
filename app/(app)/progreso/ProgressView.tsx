@@ -1,14 +1,23 @@
 import type { ReactNode } from "react";
 import { LevelIcon } from "@/components/LevelIcon";
-import { AREA_LABELS, LEVEL_LABELS, SLOT_LABELS } from "@/content/labels";
+import { PageHeader, SectionTitle } from "@/components/PageHeader";
+import { AREA_LABELS, LEVEL_LABELS } from "@/content/labels";
 import { buildCalendar, FOUNDER_GOAL, VIDEO_GOAL } from "@/lib/domain/calendar";
 import { formatLongDate, type ISODate, type ProgramState } from "@/lib/domain/program";
 import { countsBySlot, daysDone, groupByDate, percentFull, streak, type Checkin } from "@/lib/domain/stats";
 import { AREAS, SLOTS, type Plan, type Wheel } from "@/lib/domain/types";
-import s from "../shell.module.css";
 import p from "./progreso.module.css";
 
-const WEEK_HEAD = ["L", "M", "X", "J", "V", "S", "D"];
+const WEEK_HEAD = [
+  { short: "L", long: "lunes" },
+  { short: "M", long: "martes" },
+  { short: "X", long: "miércoles" },
+  { short: "J", long: "jueves" },
+  { short: "V", long: "viernes" },
+  { short: "S", long: "sábado" },
+  { short: "D", long: "domingo" },
+];
+const DONE_LEVELS = ["full", "half", "min"] as const;
 
 export type VideoSummary = { week: number; status: "pending" | "approved" | "rejected" };
 
@@ -41,173 +50,175 @@ export function ProgressView({
   const approved = videos.filter((v) => v.status === "approved").length;
   const pending = videos.filter((v) => v.status === "pending").length;
   const finished = state.kind === "finished";
+  const subtitle =
+    state.kind === "before"
+      ? `Empiezas el ${formatLongDate(start)}.`
+      : state.kind === "active"
+        ? `Día ${state.day} de 30. Cada día cumplido suma, también en mínimo.`
+        : "Has completado los 30 días.";
 
   return (
     <>
-      <header className={s.head}>
-        <p className="eyebrow">Progreso</p>
-        <h1 className="h2">Lo que estás construyendo</h1>
-      </header>
+      <PageHeader title="Tu progreso" subtitle={subtitle} />
 
       <dl className={p.stats}>
         <div>
-          <dt>Días con check-in</dt>
+          <dt>{done === 1 ? "día cumplido" : "días cumplidos"}</dt>
           <dd>{done}</dd>
         </div>
         <div>
-          <dt>Racha actual</dt>
+          <dt>de racha</dt>
           <dd>{currentStreak}</dd>
         </div>
         <div>
-          <dt>En completo</dt>
-          <dd>{pct}%</dd>
+          <dt>en completo</dt>
+          <dd>
+            {pct}
+            <span className={p.unit}>%</span>
+          </dd>
         </div>
       </dl>
 
       {/* ---------- Calendario ---------- */}
-      <section className={p.card} aria-labelledby="cal-title">
-        <h2 className={p.cardTitle} id="cal-title">
-          Tus 30 días
-        </h2>
-        <div className={p.calendar} role="grid" aria-label={`Calendario desde el ${formatLongDate(start)}`}>
-          <div className={p.calRow} role="row">
-            {WEEK_HEAD.map((d) => (
-              <span key={d} className={p.calHead} role="columnheader">
-                {d}
-              </span>
+      <section aria-labelledby="cal-title">
+        <SectionTitle id="cal-title">Tus 30 días</SectionTitle>
+        <div className={p.panel}>
+          <div className={p.calendar} role="grid" aria-labelledby="cal-title">
+            <div className={p.calRow} role="row">
+              {WEEK_HEAD.map((d) => (
+                <span key={d.short} className={p.calHead} role="columnheader" aria-label={d.long}>
+                  {d.short}
+                </span>
+              ))}
+            </div>
+            {weeks.map((week, i) => (
+              <div key={i} className={p.calRow} role="row">
+                {week.map((cell, j) =>
+                  cell.kind === "pad" ? (
+                    <span key={j} className={p.pad} role="gridcell" />
+                  ) : (
+                    <span
+                      key={j}
+                      role="gridcell"
+                      className={p.day}
+                      data-level={cell.level ?? "none"}
+                      data-future={cell.future || undefined}
+                      data-today={cell.today || undefined}
+                      aria-label={`Día ${cell.day}${cell.today ? ", hoy" : ""}: ${
+                        cell.future ? "por llegar" : cell.level ? LEVEL_LABELS[cell.level] : "sin cumplir"
+                      }`}
+                      aria-current={cell.today ? "date" : undefined}
+                    >
+                      <span className={p.dayNum}>{cell.day}</span>
+                      {cell.level ? <LevelIcon level={cell.level} size={12} /> : null}
+                    </span>
+                  ),
+                )}
+              </div>
             ))}
           </div>
-          {weeks.map((week, i) => (
-            <div key={i} className={p.calRow} role="row">
-              {week.map((cell, j) =>
-                cell.kind === "pad" ? (
-                  <span key={j} className={p.pad} role="gridcell" />
-                ) : (
-                  <span
-                    key={j}
-                    role="gridcell"
-                    className={p.day}
-                    data-level={cell.level ?? "none"}
-                    data-future={cell.future || undefined}
-                    data-today={cell.today || undefined}
-                    aria-label={`Día ${cell.day}${cell.today ? ", hoy" : ""}: ${
-                      cell.future ? "por llegar" : cell.level ? LEVEL_LABELS[cell.level] : "sin cumplir"
-                    }`}
-                    aria-current={cell.today ? "date" : undefined}
-                  >
-                    <span className={p.dayNum}>{cell.day}</span>
-                    {cell.level ? <LevelIcon level={cell.level} size={12} /> : null}
-                  </span>
-                ),
-              )}
-            </div>
-          ))}
-        </div>
-        <ul className={p.legend} aria-label="Leyenda">
-          {(["full", "half", "min"] as const).map((l) => (
-            <li key={l}>
-              <span className={p.swatch} data-level={l}>
-                <LevelIcon level={l} size={10} />
-              </span>
-              {LEVEL_LABELS[l]}
+          <ul className={p.legend} aria-label="Leyenda">
+            {DONE_LEVELS.map((l) => (
+              <li key={l}>
+                <span className={p.swatch} data-level={l}>
+                  <LevelIcon level={l} size={10} />
+                </span>
+                {LEVEL_LABELS[l]}
+              </li>
+            ))}
+            <li>
+              <span className={p.swatch} data-level="none" />
+              Sin cumplir
             </li>
-          ))}
-          <li>
-            <span className={p.swatch} data-level="none" />
-            Sin cumplir
-          </li>
-          <li>
-            <span className={p.swatch} data-today />
-            Hoy
-          </li>
-        </ul>
+            <li>
+              <span className={p.swatch} data-today />
+              Hoy
+            </li>
+          </ul>
+        </div>
       </section>
 
-      {/* ---------- Barras por hábito ---------- */}
-      <section className={p.card} aria-labelledby="habits-title">
-        <h2 className={p.cardTitle} id="habits-title">
-          Tus hábitos
-        </h2>
-        {SLOTS.map((slot) => {
-          const c = counts[slot];
-          const total = c.full + c.half + c.min;
-          return (
-            <div key={slot} className={p.habitRow}>
-              <p className={p.habitHead}>
-                <span>
-                  <span className={p.habitSlot}>{SLOT_LABELS[slot]}</span> {plan[slot].name}
-                </span>
-                <span className={p.habitTotal}>{total} días</span>
-              </p>
-              <div className={p.stack} aria-hidden="true">
-                {total
-                  ? (["full", "half", "min"] as const).map((l) =>
-                      c[l] ? <span key={l} data-level={l} style={{ flexGrow: c[l] }} /> : null,
-                    )
-                  : null}
-              </div>
-              <p className={p.habitCounts}>
-                {(["full", "half", "min"] as const).map((l) => (
-                  <span key={l}>
-                    <LevelIcon level={l} size={12} /> {LEVEL_LABELS[l]} {c[l]}
+      {/* ---------- Por hábito ---------- */}
+      <section aria-labelledby="habits-title">
+        <SectionTitle id="habits-title">Por hábito</SectionTitle>
+        <div className={p.panel}>
+          {SLOTS.map((slot) => {
+            const c = counts[slot];
+            const total = c.full + c.half + c.min;
+            return (
+              <div key={slot} className={p.habitRow}>
+                <p className={p.habitHead}>
+                  <span className={p.habitName}>{plan[slot].name}</span>
+                  <span className={p.habitTotal}>
+                    {total} {total === 1 ? "día" : "días"}
                   </span>
-                ))}
-              </p>
-            </div>
-          );
-        })}
+                </p>
+                <div className={p.stack} aria-hidden="true">
+                  {total
+                    ? DONE_LEVELS.map((l) => (c[l] ? <span key={l} data-level={l} style={{ flexGrow: c[l] }} /> : null))
+                    : null}
+                </div>
+                <p className={p.habitCounts}>
+                  {DONE_LEVELS.map((l) => (
+                    <span key={l}>
+                      <LevelIcon level={l} size={12} /> {LEVEL_LABELS[l]} {c[l]}
+                    </span>
+                  ))}
+                </p>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       {/* ---------- Recompensas ---------- */}
-      <section className={p.card} aria-labelledby="rewards-title">
-        <h2 className={p.cardTitle} id="rewards-title">
-          Recompensas
-        </h2>
-
-        <Reward
-          title="Fundador ELEVATE"
-          description="Haz check-in al menos 25 de los 30 días. El mínimo cuenta."
-          prize="Insignia en la web y descuento en el plan de 90 días."
-          value={Math.min(done, FOUNDER_GOAL)}
-          goal={FOUNDER_GOAL}
-          achieved={done >= FOUNDER_GOAL}
-        />
-
-        <Reward
-          title="Reto en público"
-          tag="Opcional"
-          description="Publica 1 vídeo por semana con #ElevatePilot."
-          prize="Gorra o camiseta ELEVATE."
-          value={approved}
-          goal={VIDEO_GOAL}
-          achieved={approved >= VIDEO_GOAL}
-          extra={
-            <>
-              {pending ? (
-                <p className={p.note}>
-                  {pending === 1 ? "1 vídeo en revisión." : `${pending} vídeos en revisión.`}
-                </p>
-              ) : null}
-              {approved < VIDEO_GOAL ? videoForm : null}
-            </>
-          }
-        />
-
-        <Reward
-          title="Plan de 90 días"
-          description={finished ? "Ya has terminado ELEVATE 30: tu siguiente paso está listo." : "Se desbloquea al terminar ELEVATE 30."}
-          prize="Conjunto completo: sudadera, camiseta y pantalón."
-          locked={!finished}
-          achieved={finished}
-        />
+      <section aria-labelledby="rewards-title">
+        <SectionTitle id="rewards-title">Recompensas</SectionTitle>
+        <div className={p.rewards}>
+          <Reward
+            icon="founder"
+            title="Fundador ELEVATE"
+            description="Haz check-in al menos 25 de los 30 días. El mínimo cuenta."
+            prize="Insignia en la web y descuento en el plan de 90 días"
+            value={Math.min(done, FOUNDER_GOAL)}
+            goal={FOUNDER_GOAL}
+            achieved={done >= FOUNDER_GOAL}
+          />
+          <Reward
+            icon="video"
+            title="Reto en público"
+            tag="Opcional"
+            description="Publica 1 vídeo por semana con #ElevatePilot."
+            prize="Gorra o camiseta ELEVATE"
+            value={approved}
+            goal={VIDEO_GOAL}
+            achieved={approved >= VIDEO_GOAL}
+            extra={
+              <>
+                {pending ? (
+                  <p className={p.note}>{pending === 1 ? "1 vídeo en revisión." : `${pending} vídeos en revisión.`}</p>
+                ) : null}
+                {approved < VIDEO_GOAL ? videoForm : null}
+              </>
+            }
+          />
+          <Reward
+            icon="lock"
+            title="Plan de 90 días"
+            description={finished ? "Ya has terminado ELEVATE 30: tu siguiente paso está listo." : "Se desbloquea al terminar ELEVATE 30."}
+            prize="Conjunto completo: sudadera, camiseta y pantalón"
+            locked={!finished}
+            achieved={finished}
+          />
+        </div>
       </section>
 
       {/* ---------- Rueda de la vida ---------- */}
-      <section className={p.card} aria-labelledby="wheel-title">
-        <h2 className={p.cardTitle} id="wheel-title">
-          Tu rueda de la vida (día 1)
-        </h2>
-        <ul className={p.wheel}>
+      <section aria-labelledby="wheel-title">
+        <SectionTitle id="wheel-title" hint="Tus notas del día 1">
+          Rueda de la vida
+        </SectionTitle>
+        <ul className={`${p.panel} ${p.wheel}`}>
           {AREAS.map((a) => (
             <li key={a}>
               <span className={p.wheelLabel}>{AREA_LABELS[a]}</span>
@@ -226,7 +237,26 @@ export function ProgressView({
   );
 }
 
+const ICONS = {
+  founder: (
+    <path d="M10 2l2.2 4.6 5 .7-3.6 3.5.9 5L10 13.4l-4.5 2.4.9-5L2.8 7.3l5-.7z" fill="currentColor" />
+  ),
+  video: (
+    <>
+      <rect x="2.5" y="5" width="11" height="10" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M13.5 9l4-2.3v6.6l-4-2.3z" fill="currentColor" />
+    </>
+  ),
+  lock: (
+    <>
+      <rect x="4" y="9" width="12" height="8.5" rx="2" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M6.8 9V6.5a3.2 3.2 0 0 1 6.4 0V9" fill="none" stroke="currentColor" strokeWidth="1.6" />
+    </>
+  ),
+};
+
 function Reward({
+  icon,
   title,
   tag,
   description,
@@ -237,6 +267,7 @@ function Reward({
   locked,
   extra,
 }: {
+  icon: keyof typeof ICONS;
   title: string;
   tag?: string;
   description: string;
@@ -247,45 +278,39 @@ function Reward({
   locked?: boolean;
   extra?: ReactNode;
 }) {
+  const hasProgress = value !== undefined && goal !== undefined;
   return (
-    <div className={p.reward} data-achieved={achieved || undefined} data-locked={locked || undefined}>
-      <div className={p.rewardHead}>
-        <p className={p.rewardTitle}>
-          {locked ? (
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-              <rect x="3.5" y="7" width="9" height="6.5" rx="1.5" />
-              <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" />
-            </svg>
+    <article className={p.reward} data-achieved={(achieved && !locked) || undefined} data-locked={locked || undefined}>
+      <span className={p.rewardIcon} aria-hidden="true">
+        <svg viewBox="0 0 20 20">{ICONS[icon]}</svg>
+      </span>
+      <div className={p.rewardBody}>
+        <div className={p.rewardHead}>
+          <h3 className={p.rewardTitle}>
+            {title}
+            {tag ? <span className={p.tag}>{tag}</span> : null}
+          </h3>
+          {hasProgress ? (
+            <span className={p.rewardCount}>
+              {value}
+              <span>/{goal}</span>
+            </span>
+          ) : locked ? (
+            <span className={p.tag}>Bloqueado</span>
           ) : null}
-          {title}
-          {tag ? <span className={p.tag}>{tag}</span> : null}
-        </p>
-        {value !== undefined && goal !== undefined ? (
-          <span className={p.rewardCount}>
-            {value}/{goal}
-          </span>
-        ) : locked ? (
-          <span className={p.tag}>Bloqueado</span>
-        ) : null}
-      </div>
-      {value !== undefined && goal !== undefined ? (
-        <div
-          className={p.bar}
-          role="progressbar"
-          aria-label={title}
-          aria-valuemin={0}
-          aria-valuemax={goal}
-          aria-valuenow={value}
-        >
-          <span style={{ width: `${(value / goal) * 100}%` }} />
         </div>
-      ) : null}
-      <p className={p.rewardText}>{description}</p>
-      <p className={p.prize}>
-        <span>Recompensa</span> {prize}
-      </p>
-      {achieved && !locked ? <p className={p.achieved}>¡Conseguida!</p> : null}
-      {extra}
-    </div>
+        {hasProgress ? (
+          <div className={p.bar} role="progressbar" aria-label={title} aria-valuemin={0} aria-valuemax={goal} aria-valuenow={value}>
+            <span style={{ width: `${(value / goal) * 100}%` }} />
+          </div>
+        ) : null}
+        <p className={p.rewardText}>{description}</p>
+        <p className={p.prize}>
+          {achieved && !locked ? "Conseguida: " : "Premio: "}
+          <strong>{prize}</strong>
+        </p>
+        {extra}
+      </div>
+    </article>
   );
 }

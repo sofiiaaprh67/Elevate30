@@ -1,0 +1,165 @@
+/* Tarjeta principal de Hoy: la única con relieve */
+.card {
+  position: relative;
+  display: grid;
+  gap: var(--s-5);
+  padding: var(--s-6) var(--s-5) var(--s-5);
+  border-radius: var(--r-card);
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(0, 102, 255, 0.14), transparent 60%),
+    var(--carbon);
+  box-shadow: inset 0 0 0 1px var(--steel-2);
+}
+.card::before {
+  /* filo superior con el degradado de la marca */
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 28px;
+  right: 28px;
+  height: 1px;
+  background: var(--brand-grad);
+  opacity: 0.7;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s-3);
+}
+.title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 24px;
+  letter-spacing: -0.03em;
+}
+.count {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ash);
+}
+.dots {
+  display: inline-flex;
+  gap: 4px;
+}
+.dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--steel-2);
+  transition: background-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+.dots span[data-on] {
+  background: var(--cyan);
+  box-shadow: none;
+}
+
+.list {
+  display: grid;
+  gap: var(--s-5);
+}
+.row {
+  display: grid;
+  gap: 10px;
+}
+.rowHead {
+  display: grid;
+  gap: 2px;
+}
+.name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+.detail {
+  min-height: 21px;
+  font-size: 14px;
+  color: var(--ash);
+}
+.detail[data-chosen] {
+  color: var(--porcelain);
+}
+
+/* Control segmentado de 4 niveles (el de la landing) */
+.seg {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 4px;
+  border-radius: 16px;
+  background: var(--obsidian);
+  box-shadow: inset 0 0 0 1px var(--steel);
+}
+.thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / 4);
+  border-radius: 12px;
+  opacity: 0;
+  transform: translateX(calc(var(--idx) * 100%));
+  transition:
+    transform 0.4s var(--ease),
+    background-color 0.3s var(--ease),
+    opacity 0.2s;
+}
+.thumb[data-visible] {
+  opacity: 1;
+}
+.seg[data-level="full"] .thumb {
+  background: var(--blue);
+}
+.seg[data-level="half"] .thumb {
+  background: rgba(0, 102, 255, 0.4);
+  box-shadow: inset 0 0 0 1.5px var(--blue);
+}
+.seg[data-level="min"] .thumb {
+  background: rgba(0, 217, 255, 0.12);
+  box-shadow: inset 0 0 0 1.5px var(--cyan);
+}
+.seg[data-level="skip"] .thumb {
+  background: var(--steel);
+  box-shadow: inset 0 0 0 1.5px var(--slate);
+}
+
+.option {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 56px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ash);
+  transition: color 0.25s;
+}
+.option:hover {
+  color: var(--porcelain);
+}
+.option[aria-checked="true"] {
+  color: var(--porcelain);
+}
+.seg[data-level="full"] .option[aria-checked="true"] {
+  color: var(--white);
+}
+.seg[data-level="full"] .option[aria-checked="true"] svg circle {
+  fill: var(--white);
+}
+.option:active {
+  transform: scale(0.97);
+}
+
+.error {
+  font-size: 14px;
+  color: var(--danger);
+}

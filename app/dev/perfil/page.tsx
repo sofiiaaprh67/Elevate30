@@ -2,7 +2,7 @@ import { ProfileView } from "@/app/(app)/perfil/ProfileView";
 import { ReviewForm } from "@/app/(app)/perfil/ReviewForm";
 import s from "@/app/(app)/shell.module.css";
 import { BottomNav } from "@/components/BottomNav";
-import { PillButton } from "@/components/ui/Pill";
+import pf from "@/app/(app)/perfil/perfil.module.css";
 import { generatePlan } from "@/lib/domain/plan";
 import type { Intake } from "@/lib/domain/types";
 import { devUpdateReview } from "../actions-perfil";
@@ -34,16 +34,11 @@ export default function DevPerfil() {
           isFounder
           intake={SAMPLE}
           plan={generatePlan(SAMPLE)}
-          swap={() => (
-            <PillButton type="button" variant="ghost" size="sm" block>
-              Cambiar hábito
-            </PillButton>
-          )}
           reviewForm={<ReviewForm weekday={0} time="19:00" action={devUpdateReview} />}
           signOut={
-            <PillButton type="button" variant="ghost" block>
+            <button type="button" className={pf.signOut}>
               Cerrar sesión
-            </PillButton>
+            </button>
           }
         />
       </main>

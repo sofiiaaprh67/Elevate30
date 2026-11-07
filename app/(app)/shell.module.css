@@ -16,21 +16,31 @@
 
 .countdown {
   display: grid;
-  gap: var(--s-4);
+  gap: var(--s-2);
+  justify-items: center;
+  text-align: center;
+  padding: var(--s-8) var(--s-6);
+  background:
+    radial-gradient(100% 90% at 50% 0%, rgba(0, 102, 255, 0.22), transparent 65%),
+    var(--carbon);
 }
 .countNum {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 72px;
-  line-height: 1;
-  letter-spacing: -0.05em;
+  font-size: clamp(88px, 28vw, 120px);
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+  font-variant-numeric: tabular-nums;
 }
 .countLabel {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ash);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--porcelain);
+}
+.countdown :global(.muted) {
+  margin-top: var(--s-3);
+  max-width: 32ch;
+  font-size: 15px;
 }
 
 .list {

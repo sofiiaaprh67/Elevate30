@@ -1,0 +1,89 @@
+.ring {
+  position: relative;
+  width: min(236px, 62vw);
+  aspect-ratio: 1;
+  margin: 0 auto;
+}
+.ring svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Segmentos: grosor + color = nivel (no depende solo del tono) */
+.seg {
+  fill: none;
+  stroke-linecap: round;
+  stroke: var(--steel);
+  stroke-width: 4;
+  animation: segIn 0.7s var(--ease) both;
+  animation-delay: calc(var(--i) * 22ms);
+}
+.seg[data-level="full"] {
+  stroke: url(#ring-grad);
+  stroke-width: 14;
+}
+.seg[data-level="half"] {
+  stroke: var(--blue);
+  stroke-opacity: 0.7;
+  stroke-width: 9;
+}
+.seg[data-level="min"] {
+  stroke: var(--cyan);
+  stroke-width: 4;
+}
+.seg[data-level="none"] {
+  stroke: var(--steel-2);
+  stroke-width: 4;
+}
+.seg[data-level="future"] {
+  stroke: var(--steel);
+  stroke-width: 2;
+}
+.seg[data-today] {
+  stroke: var(--porcelain);
+  stroke-width: 6;
+  filter: drop-shadow(0 0 6px rgba(0, 217, 255, 0.55));
+}
+.seg[data-today][data-level="full"],
+.seg[data-today][data-level="half"],
+.seg[data-today][data-level="min"] {
+  filter: drop-shadow(0 0 8px rgba(0, 217, 255, 0.6));
+}
+
+@keyframes segIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Centro */
+.center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+  pointer-events: none;
+}
+.caption {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cyan);
+}
+.num {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(64px, 20vw, 84px);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  font-variant-numeric: tabular-nums;
+}
+.of {
+  font-size: 14px;
+  color: var(--ash);
+}

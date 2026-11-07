@@ -1,50 +1,51 @@
-/* ---------- Cifras ---------- */
+/* ---------- Resumen: tres cifras ---------- */
 .stats {
   margin: 0;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   border-radius: var(--r-tile);
-  background: var(--graphite);
-  box-shadow: var(--line);
+  background:
+    radial-gradient(120% 120% at 50% 0%, rgba(0, 102, 255, 0.12), transparent 60%),
+    var(--carbon);
+  box-shadow: inset 0 0 0 1px var(--steel-2);
 }
 .stats > div {
-  padding: var(--s-5) var(--s-3);
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  padding: var(--s-5) var(--s-2) var(--s-4);
   text-align: center;
 }
 .stats > div + div {
   border-left: 1px solid var(--steel);
 }
-.stats dt {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ash);
-  min-height: 2.6em;
-}
 .stats dd {
-  margin: 6px 0 0;
+  margin: 0;
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 36px;
+  font-size: 40px;
   line-height: 1;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+}
+.unit {
+  font-size: 22px;
+  margin-left: 1px;
+  color: var(--ash);
+}
+.stats dt {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--ash);
 }
 
-/* ---------- Tarjetas ---------- */
-.card {
-  display: grid;
-  gap: var(--s-4);
-  padding: var(--s-6) var(--s-5);
-  border-radius: var(--r-card);
+/* ---------- Paneles ---------- */
+.panel {
+  margin: var(--s-3) 0 0;
+  padding: var(--s-5);
+  border-radius: var(--r-tile);
   background: var(--graphite);
   box-shadow: var(--line);
-}
-.cardTitle {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 22px;
-  letter-spacing: -0.02em;
 }
 
 /* ---------- Calendario ---------- */
@@ -59,9 +60,10 @@
 }
 .calHead {
   text-align: center;
-  font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--ash);
+  padding-bottom: 2px;
 }
 .pad {
   aspect-ratio: 1;
@@ -75,18 +77,19 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 5px 6px;
-  font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
   background: var(--obsidian);
-  box-shadow: var(--line);
+  box-shadow: var(--line-2);
   color: var(--ash);
 }
 .day svg {
   align-self: flex-end;
 }
 .day[data-level="full"] {
-  background: var(--lvl-full);
+  background: var(--brand-grad);
   box-shadow: none;
   color: var(--white);
 }
@@ -94,8 +97,8 @@
   fill: var(--white);
 }
 .day[data-level="half"] {
-  background: var(--lvl-half);
-  box-shadow: none;
+  background: rgba(0, 102, 255, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(0, 102, 255, 0.8);
   color: var(--white);
 }
 .day[data-level="min"] {
@@ -104,9 +107,10 @@
   color: var(--cyan);
 }
 .day[data-future] {
-  opacity: 0.35;
-  box-shadow: inset 0 0 0 1px var(--steel);
   background: transparent;
+  box-shadow: inset 0 0 0 1px var(--steel);
+  color: var(--ash);
+  opacity: 0.6;
 }
 .day[data-today] {
   outline: 2px solid var(--porcelain);
@@ -114,8 +118,9 @@
 }
 .legend {
   list-style: none;
-  margin: 0;
-  padding: 0;
+  margin: var(--s-4) 0 0;
+  padding: var(--s-4) 0 0;
+  border-top: 1px solid var(--steel);
   display: flex;
   flex-wrap: wrap;
   gap: 8px 16px;
@@ -137,15 +142,15 @@
   box-shadow: var(--line-2);
 }
 .swatch[data-level="full"] {
-  background: var(--lvl-full);
+  background: var(--brand-grad);
   box-shadow: none;
 }
 .swatch[data-level="full"] svg circle {
   fill: var(--white);
 }
 .swatch[data-level="half"] {
-  background: var(--lvl-half);
-  box-shadow: none;
+  background: rgba(0, 102, 255, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(0, 102, 255, 0.8);
 }
 .swatch[data-level="min"] {
   background: var(--lvl-min-bg);
@@ -158,37 +163,37 @@
   outline-offset: -2px;
 }
 
-/* ---------- Hábitos ---------- */
+/* ---------- Por hábito ---------- */
 .habitRow {
   display: grid;
   gap: 8px;
-  padding-top: var(--s-3);
+}
+.habitRow + .habitRow {
+  margin-top: var(--s-4);
+  padding-top: var(--s-4);
   border-top: 1px solid var(--steel);
 }
 .habitHead {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
   gap: var(--s-3);
-  font-weight: 600;
 }
-.habitSlot {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ash);
-  margin-right: 4px;
+.habitName {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: -0.015em;
 }
 .habitTotal {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--ash);
   white-space: nowrap;
 }
 .stack {
   display: flex;
   gap: 3px;
-  height: 12px;
+  height: 10px;
   border-radius: 6px;
   overflow: hidden;
   background: var(--steel);
@@ -197,10 +202,10 @@
   flex-basis: 0;
 }
 .stack span[data-level="full"] {
-  background: var(--lvl-full);
+  background: var(--brand-grad);
 }
 .stack span[data-level="half"] {
-  background: repeating-linear-gradient(135deg, var(--lvl-full) 0 4px, rgba(0, 102, 255, 0.45) 4px 8px);
+  background: repeating-linear-gradient(135deg, var(--blue) 0 4px, rgba(0, 102, 255, 0.45) 4px 8px);
 }
 .stack span[data-level="min"] {
   background: var(--lvl-min-bg);
@@ -220,27 +225,60 @@
 }
 
 /* ---------- Recompensas ---------- */
+.rewards {
+  margin-top: var(--s-3);
+  display: grid;
+  border-radius: var(--r-tile);
+  background: var(--graphite);
+  box-shadow: var(--line);
+  overflow: hidden;
+}
 .reward {
   display: grid;
-  gap: var(--s-2);
-  padding: var(--s-4);
-  border-radius: var(--r-field);
-  background: var(--obsidian);
-  box-shadow: var(--line);
+  grid-template-columns: 40px 1fr;
+  gap: var(--s-4);
+  padding: var(--s-5);
 }
-.reward[data-achieved] {
-  box-shadow: inset 0 0 0 1.5px var(--cyan);
+.reward + .reward {
+  border-top: 1px solid var(--steel);
 }
-.reward[data-locked] {
-  opacity: 0.75;
+.rewardIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 102, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(0, 102, 255, 0.3);
+  color: var(--cyan);
+}
+.rewardIcon svg {
+  width: 20px;
+  height: 20px;
+}
+.reward[data-achieved] .rewardIcon {
+  background: var(--brand-grad);
+  box-shadow: none;
+  color: var(--white);
+}
+.reward[data-locked] .rewardIcon {
+  background: var(--steel);
+  box-shadow: none;
+  color: var(--ash);
+}
+.rewardBody {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
 }
 .rewardHead {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
   gap: var(--s-3);
 }
 .rewardTitle {
+  margin: 0;
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
@@ -248,28 +286,25 @@
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 18px;
-  letter-spacing: -0.01em;
-}
-.rewardTitle svg {
-  width: 16px;
-  height: 16px;
-  color: var(--ash);
+  letter-spacing: -0.015em;
 }
 .tag {
-  padding: 3px 8px;
+  padding: 2px 8px;
   border-radius: var(--r-pill);
   box-shadow: var(--line-2);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--ash);
 }
 .rewardCount {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 18px;
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.rewardCount span {
+  font-size: 14px;
+  color: var(--ash);
 }
 .bar {
   height: 6px;
@@ -289,18 +324,11 @@
 }
 .prize {
   font-size: 14px;
+  color: var(--ash);
 }
-.prize span {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--cyan);
-  margin-right: 4px;
-}
-.achieved {
-  font-weight: 700;
-  color: var(--cyan);
+.prize strong {
+  font-weight: 600;
+  color: var(--porcelain);
 }
 .note {
   font-size: 14px;
@@ -326,7 +354,7 @@
   padding: 0 14px;
   border: 0;
   border-radius: var(--r-field);
-  background: var(--graphite);
+  background: var(--obsidian);
   box-shadow: var(--line-2);
   color: var(--porcelain);
   font-size: 16px;
@@ -340,10 +368,8 @@
 /* ---------- Rueda ---------- */
 .wheel {
   list-style: none;
-  margin: 0;
-  padding: 0;
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 .wheel li {
   display: grid;
@@ -371,4 +397,5 @@
   font-family: var(--font-display);
   font-weight: 600;
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }

@@ -1,0 +1,48 @@
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-4) 0 var(--s-2);
+}
+.text {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(32px, 9vw, 42px);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+.subtitle {
+  font-size: 15px;
+  color: var(--ash);
+}
+.aside {
+  flex-shrink: 0;
+}
+
+.section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s-3);
+  padding: var(--s-5) var(--s-1) 0;
+}
+.sectionTitle {
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+.hint {
+  font-size: 13px;
+  color: var(--ash);
+  text-align: right;
+}

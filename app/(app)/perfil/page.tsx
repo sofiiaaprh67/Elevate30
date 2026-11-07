@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { signOut } from "@/app/entrar/actions";
-import { SwapHabitButton } from "@/components/SwapHabitButton";
-import { PillButton } from "@/components/ui/Pill";
 import { requireUser } from "@/lib/auth";
 import { getIntake, getPlan } from "@/lib/data/intake";
 import { getCheckins } from "@/lib/data/progress";
@@ -14,6 +12,7 @@ import { getStartDate } from "@/lib/settings";
 import { updateReview } from "./actions";
 import { ProfileView } from "./ProfileView";
 import { ReviewForm } from "./ReviewForm";
+import pf from "./perfil.module.css";
 
 export const metadata: Metadata = { title: "Perfil" };
 
@@ -37,13 +36,12 @@ export default async function PerfilPage() {
       isFounder={isFounder}
       intake={intake}
       plan={plan}
-      swap={(slot, habitName) => <SwapHabitButton slot={slot} habitName={habitName} />}
       reviewForm={<ReviewForm weekday={intake.reviewWeekday} time={intake.reviewTime} action={updateReview} />}
       signOut={
         <form action={signOut}>
-          <PillButton type="submit" variant="ghost" block>
+          <button type="submit" className={pf.signOut}>
             Cerrar sesión
-          </PillButton>
+          </button>
         </form>
       }
     />
