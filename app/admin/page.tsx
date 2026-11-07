@@ -19,13 +19,13 @@ export default async function AdminPage() {
   const [start, allowedRes, profilesRes, intakeRes, checkinsRes, videosRes] = await Promise.all([
     getStartDate(),
     supabase.from("allowed_emails").select("email, role, note").order("added_at"),
-    supabase.from("profiles").select("id, email, role"),
+    supabase.from("profiles").select("id, email, role, program_start"),
     supabase.from("intake").select("user_id, name, completed_at"),
     supabase.from("checkins").select("user_id, date, slot, level"),
     supabase.from("video_submissions").select("id, user_id, week, url, status, submitted_at").order("submitted_at"),
   ]);
 
-  const profiles = (profilesRes.data ?? []) as { id: string; email: string; role: string }[];
+  const profiles = (profilesRes.data ?? []) as { id: string; email: string; role: string; program_start: string | null }[];
   const intakes = new Map((intakeRes.data ?? []).map((i) => [i.user_id as string, i]));
   const checkins = (checkinsRes.data ?? []) as (Checkin & { user_id: string })[];
   const videos = (videosRes.data ?? []) as VideoRow[];
@@ -34,8 +34,10 @@ export default async function AdminPage() {
   const state = programState(start, today);
   const participants = profiles.filter((p) => p.role !== "admin");
 
-  const rows = participants.map((p) =>
-    summarizeParticipant(
+  const rows = participants.map((p) => {
+    // El usuario de demostración tiene su propia fecha de inicio
+    const ownStart = p.program_start ?? start;
+    return summarizeParticipant(
       {
         id: p.id,
         email: p.email,
@@ -44,11 +46,11 @@ export default async function AdminPage() {
         checkins: checkins.filter((c) => c.user_id === p.id),
         videos: videos.filter((v) => v.user_id === p.id),
       },
-      start,
+      ownStart,
       today,
-      state.kind === "active",
-    ),
-  );
+      programState(ownStart, today).kind === "active",
+    );
+  });
 
   const registered = new Set(profiles.map((p) => p.email));
   const allowed: AllowedEmail[] = ((allowedRes.data ?? []) as Omit<AllowedEmail, "registered">[]).map((a) => ({

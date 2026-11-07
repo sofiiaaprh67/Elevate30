@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Hoy" };
 
 export default async function HoyPage({ searchParams }: { searchParams: Promise<{ dia?: string }> }) {
   const user = await requireUser();
-  const [start, intakeData, { dia }] = await Promise.all([getStartDate(), getIntake(user.id), searchParams]);
+  const [start, intakeData, { dia }] = await Promise.all([getStartDate(user.id), getIntake(user.id), searchParams]);
   const hasPlan = Boolean(intakeData?.completed);
 
   // En desarrollo, ?dia=9 simula ese día del programa para poder probarlo.

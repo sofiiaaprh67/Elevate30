@@ -23,7 +23,7 @@ export default async function PerfilPage() {
     getIntake(user.id),
     getPlan(user.id),
     getCheckins(user.id),
-    getStartDate(),
+    getStartDate(user.id),
   ]);
   const intake = intakeData ? toIntake(intakeData.draft) : null;
   if (!intake || !plan) redirect("/cuestionario");

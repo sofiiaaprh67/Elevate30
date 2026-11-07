@@ -86,3 +86,19 @@ El servidor de correo incluido en Supabase solo envía unos pocos emails por hor
 4. **Dominio:** *Settings* → *Domains* → añade `app.tudominio.com` y crea en tu proveedor de dominio el registro CNAME que indique Vercel.
 5. **Supabase** → *Authentication* → *URL Configuration*: cambia la *Site URL* a la dirección final y añade `https://app.tudominio.com/**` a *Redirect URLs*.
 6. Abre la app en el móvil y añádela a la pantalla de inicio para comprobar el icono y el modo app.
+
+## Usuario de demostración (día 9)
+
+Para enseñar la app con datos, sin cambiar la fecha de nadie más:
+
+1. Añade a `.env.local` la clave secreta de Supabase (*Project Settings* → *API Keys* → *Secret keys*):
+   `SUPABASE_SECRET_KEY=sb_secret_…` — solo en tu ordenador; nunca en Vercel ni en el repositorio.
+2. Ejecuta:
+   ```bash
+   npm run seed:demo
+   ```
+   Opciones: `npm run seed:demo -- --email demo@ejemplo.com --dia 9 --site https://elevate30.vercel.app` (con `--site` el enlace lleva a la app publicada).
+3. El script crea o reinicia a **Lucía** (`demo@ejemplo.com`): plan generado con las reglas, 8 días de check-ins (con los avisos de «3 días sin cumplir» y «5 días en completo»), lecciones hechas, la revisión del día 7 y un vídeo aprobado. Tiene su propia fecha de inicio (`profiles.program_start`), así que hoy está en el día 9.
+4. Al terminar muestra un **enlace para entrar** como Lucía (un solo uso, caduca en 1 hora). No envía emails.
+
+Vuelve a ejecutarlo antes de cada demo para dejarla otra vez en el día 9. Lucía aparece en el panel de admin con la nota «Demo»; puedes quitarla de la lista cuando ya no la necesites.

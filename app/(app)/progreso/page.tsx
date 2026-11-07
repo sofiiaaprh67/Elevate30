@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Progreso" };
 export default async function ProgresoPage() {
   const user = await requireUser();
   const [start, intakeData, plan, checkins, videos] = await Promise.all([
-    getStartDate(),
+    getStartDate(user.id),
     getIntake(user.id),
     getPlan(user.id),
     getCheckins(user.id),

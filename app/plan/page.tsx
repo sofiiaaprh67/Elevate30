@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Tu plan" };
 
 export default async function PlanPage() {
   const user = await requireUser();
-  const [intake, plan, start] = await Promise.all([getIntake(user.id), getPlan(user.id), getStartDate()]);
+  const [intake, plan, start] = await Promise.all([getIntake(user.id), getPlan(user.id), getStartDate(user.id)]);
   if (!intake?.completed || !plan) redirect("/cuestionario");
 
   const state = programState(start, todayInMadrid());
