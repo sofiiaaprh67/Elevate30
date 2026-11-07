@@ -80,7 +80,7 @@ describe("avisos", () => {
     const a = alerts(by, plan, START, d(4), 4);
     expect(a.map((x) => x.slot)).toEqual(["body", "goal"]);
     expect(a[0].text).toBe(
-      "Llevas 3 días sin cumplir «Caminar». Bájalo unos días al mínimo: caminar 2 min o subir escaleras.",
+      "Llevas 3 días sin cumplir «Caminar». Bájalo unos días al mínimo: ponerte las zapatillas y caminar 2 min.",
     );
   });
 
@@ -109,14 +109,16 @@ describe("frases PARA TI", () => {
     expect(forYouPhrase(5, ctx)).toBe("Con menos de 1 hora libre al día, tus niveles son de 20, 10 y 2 minutos.");
     expect(forYouPhrase(6, ctx)).toBe("Tienes más energía por la noche: pon «Bloque de estudio» a las 21:00.");
     expect(forYouPhrase(17, ctx)).toBe(
-      "El hábito que menos cumples es «Pausa mental». Prueba con su nivel mínimo: 1 min respirando en silencio.",
+      "El hábito que menos cumples es «Pausa mental». Prueba con su nivel mínimo: 1 min respirando despacio, en silencio.",
     );
     expect(forYouPhrase(22, ctx)).toBe("El hábito que más cumples es «Bloque de estudio».");
     expect(forYouPhrase(26, ctx)).toBe(
       "Llevas 8 días con check-in, una racha de 3 y un 40% de hábitos en nivel completo.",
     );
     expect(forYouPhrase(27, ctx)).toBe("Ahora tu revisión es los domingos a las 19:00.");
-    expect(forYouPhrase(1, ctx)).toBeNull();
+    expect(forYouPhrase(1, ctx)).toBe("Ana, tu objetivo es «Aprobar Estadística». Estos 30 días van de construir el sistema que te lleve hasta ahí.");
+    expect(forYouPhrase(4, ctx)).not.toBeNull();
+    expect(forYouPhrase(15, ctx)).toBeNull();
   });
 
   it("hay 30 lecciones, una por día", () => {

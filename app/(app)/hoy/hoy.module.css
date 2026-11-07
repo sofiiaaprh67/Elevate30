@@ -265,3 +265,251 @@
   font-size: 16px;
 }
 
+/* ---------- Lección: desarrollo, pasos y ciencia ---------- */
+.lessonLead {
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--porcelain);
+  max-width: 60ch;
+}
+.steps {
+  display: grid;
+  gap: var(--s-3);
+  margin-top: var(--s-2);
+}
+.stepsTitle {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 19px;
+  letter-spacing: -0.015em;
+}
+.stepList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-3);
+  counter-reset: step;
+}
+.stepList li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: var(--s-3);
+  align-items: start;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--porcelain);
+}
+.stepList li::before {
+  content: counter(step);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 0 0 1.5px var(--steel-2);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--cyan);
+}
+.science {
+  display: grid;
+  gap: 6px;
+  padding: var(--s-4);
+  border-radius: var(--r-field);
+  background: rgba(0, 217, 255, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(0, 217, 255, 0.22);
+}
+.scienceLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cyan);
+}
+.scienceLabel svg {
+  width: 16px;
+  height: 16px;
+}
+.scienceText {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--porcelain);
+}
+.scienceSource {
+  font-size: 13px;
+  color: var(--ash);
+  font-style: italic;
+}
+.archiveLink {
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--s-4);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ash);
+}
+.archiveLink:hover {
+  color: var(--porcelain);
+}
+
+/* ---------- Formularios de lección ---------- */
+.formField {
+  display: grid;
+  gap: 6px;
+}
+.formLabel {
+  display: grid;
+  gap: 2px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--porcelain);
+}
+.formSub {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ash);
+}
+.input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--r-field);
+  background: var(--obsidian);
+  box-shadow: var(--line-2);
+  color: var(--porcelain);
+  font-size: 16px;
+}
+.input:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--cyan);
+}
+.textarea::placeholder,
+.input::placeholder {
+  color: var(--slate);
+}
+
+/* Opciones del día 30 */
+.choice {
+  display: grid;
+  gap: 2px;
+  padding: 12px 18px;
+}
+.choiceLabel {
+  font-weight: 600;
+}
+.choiceDetail {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ash);
+}
+
+/* ---------- Revisión: datos de la semana ---------- */
+.week {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border-radius: var(--r-field);
+  background: var(--obsidian);
+  box-shadow: var(--line);
+}
+.weekSummary {
+  font-size: 15px;
+  color: var(--ash);
+}
+.weekSummary strong {
+  color: var(--porcelain);
+  font-family: var(--font-display);
+  font-size: 18px;
+}
+.weekTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.weekTable th,
+.weekTable td {
+  padding: 5px 0;
+}
+.weekDay {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ash);
+  text-align: center;
+}
+.weekTable th.weekHabit {
+  width: 38%;
+  padding-right: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--porcelain);
+  line-height: 1.25;
+}
+.weekCell {
+  text-align: center;
+}
+.weekCell svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+.weekEmpty {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--steel-2);
+  vertical-align: middle;
+}
+
+/* Decisión por hábito */
+.decisions {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-3);
+}
+.decisions legend {
+  padding: 0;
+  margin-bottom: var(--s-2);
+}
+.decisionRow {
+  display: grid;
+  gap: 6px;
+}
+.decisionName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ash);
+}
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--r-field);
+  background: var(--obsidian);
+  box-shadow: var(--line);
+}
+.segment {
+  min-height: 44px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ash);
+}
+.segment:hover {
+  color: var(--porcelain);
+}
+.segment[aria-checked="true"] {
+  background: var(--blue);
+  color: var(--white);
+}
+

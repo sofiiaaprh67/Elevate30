@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/Field";
-import { AREA_LABELS } from "@/content/labels";
-import { REVIEW_QUESTIONS } from "@/content/lessons";
-import { AREAS, type Wheel } from "@/lib/domain/types";
+import { LevelIcon } from "@/components/LevelIcon";
+import { AREA_LABELS, LEVEL_LABELS } from "@/content/labels";
+import type { FormField } from "@/content/lessons";
+import { DECISIONS, type Review } from "@/content/reviews";
+import type { WeekRow } from "@/lib/domain/review";
+import { AREAS, SLOTS, type Plan, type Wheel } from "@/lib/domain/types";
 import { createClient } from "@/lib/supabase/client";
 import { useAutosave, type SaveStatus } from "@/lib/useAutosave";
 import s from "./hoy.module.css";
@@ -117,6 +120,64 @@ export function ActionText({
   );
 }
 
+/** Formulario de una lección: sus respuestas forman parte de "Tu sistema". */
+export function ActionForm({
+  userId,
+  day,
+  text,
+  fields,
+  plan,
+  initial,
+}: {
+  userId: string;
+  day: number;
+  text: string;
+  fields: FormField[];
+  plan: Plan;
+  initial: Record<string, string>;
+}) {
+  const { value, update, status } = useAutosave({ userId, kind: "lesson", day, initial });
+  const [marked, setMarked] = useState(Object.values(initial).some((v) => String(v ?? "").trim()));
+  return (
+    <div className={s.stack}>
+      <p className={s.actionText}>{text}</p>
+      {fields.map((f) => {
+        const id = `lesson-${day}-${f.key}`;
+        const label = f.slot ? plan[f.slot].name : f.label;
+        const rows = f.rows ?? 3;
+        const props = {
+          id,
+          maxLength: 1000,
+          placeholder: f.placeholder,
+          value: String(value[f.key] ?? ""),
+          onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            update({ [f.key]: e.target.value });
+            if (!marked && e.target.value.trim()) {
+              setMarked(true);
+              void setActionDone(userId, day, true);
+            }
+          },
+        };
+        return (
+          <div key={f.key} className={s.formField}>
+            <label htmlFor={id} className={s.formLabel}>
+              {label}
+              {f.slot ? <span className={s.formSub}>{plan[f.slot].schedule}</span> : null}
+            </label>
+            {rows === 1 ? (
+              <input type="text" className={s.input} {...props} />
+            ) : (
+              <textarea className={s.textarea} rows={rows} {...props} />
+            )}
+          </div>
+        );
+      })}
+      <p className={s.hint}>Se guarda solo y lo encontrarás en la pestaña Sistema.</p>
+      <SaveState status={status} />
+    </div>
+  );
+}
+
 /** Elección del plan de 90 días (día 30). */
 export function ActionChoice({
   userId,
@@ -130,7 +191,7 @@ export function ActionChoice({
   day: number;
   entry: string;
   text: string;
-  options: { value: string; label: string }[];
+  options: { value: string; label: string; detail: string }[];
   initial: string | null;
 }) {
   const { value, update, status } = useAutosave({ userId, kind: entry, day, initial: { choice: initial } });
@@ -152,7 +213,8 @@ export function ActionChoice({
               void setActionDone(userId, day, true);
             }}
           >
-            {o.label}
+            <span className={s.choiceLabel}>{o.label}</span>
+            <span className={s.choiceDetail}>{o.detail}</span>
           </button>
         ))}
       </div>
@@ -219,24 +281,76 @@ export function ActionWheel({
   );
 }
 
-/** Revisión semanal (días 7, 14, 21 y 28). */
+/** Revisión semanal (días 7, 14, 21 y 28): datos de la semana, preguntas y decisión por hábito. */
 export function WeeklyReview({
   userId,
   day,
+  review,
+  plan,
+  week,
   initial,
 }: {
   userId: string;
   day: number;
+  review: Review;
+  plan: Plan;
+  week: WeekRow[];
   initial: Record<string, string>;
 }) {
   const { value, update, status } = useAutosave({ userId, kind: "weekly_review", day, initial });
+  const daysWithCheckin = week.filter((d) => Object.values(d.levels).some((l) => l && l !== "skip")).length;
   return (
     <section className={`${s.card} ${s.review}`} aria-labelledby="review-title">
-      <p className={s.eyebrowCyan}>Revisión semanal</p>
-      <h2 className={s.cardTitle} id="review-title">
-        Mira tu semana con datos
-      </h2>
-      {REVIEW_QUESTIONS.map((q) => (
+      <div className={s.stack}>
+        <p className={s.eyebrowCyan}>Revisión semanal {day / 7} de 4</p>
+        <h2 className={s.cardTitle} id="review-title">
+          {review.title}
+        </h2>
+        <p className={s.hint}>{review.intro}</p>
+      </div>
+
+      {/* ---------- Datos de la semana ---------- */}
+      <div className={s.week}>
+        <p className={s.weekSummary}>
+          <strong>{daysWithCheckin} de 7</strong> días con algo hecho esta semana
+        </p>
+        <table className={s.weekTable}>
+          <caption className="sr-only">Tus check-ins de los últimos 7 días</caption>
+          <thead>
+            <tr>
+              <th scope="col" className={s.weekHabit}>
+                <span className="sr-only">Hábito</span>
+              </th>
+              {week.map((d) => (
+                <th key={d.date} scope="col" className={s.weekDay}>
+                  {d.weekday}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {SLOTS.map((slot) => (
+              <tr key={slot}>
+                <th scope="row" className={s.weekHabit}>
+                  {plan[slot].name}
+                </th>
+                {week.map((d) => {
+                  const level = d.levels[slot];
+                  return (
+                    <td key={d.date} className={s.weekCell}>
+                      {level ? <LevelIcon level={level} size={16} /> : <span className={s.weekEmpty} aria-hidden="true" />}
+                      <span className="sr-only">{level ? LEVEL_LABELS[level] : "Sin check-in"}</span>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ---------- Preguntas ---------- */}
+      {review.questions.map((q) => (
         <div key={q.key} className={s.stack}>
           <label htmlFor={`rv-${q.key}`} className={s.reviewLabel}>
             {q.label}
@@ -246,11 +360,42 @@ export function WeeklyReview({
             className={s.textarea}
             rows={3}
             maxLength={1000}
+            placeholder={q.placeholder}
             value={String(value[q.key] ?? "")}
             onChange={(e) => update({ [q.key]: e.target.value })}
           />
         </div>
       ))}
+
+      {/* ---------- Decisión por hábito ---------- */}
+      <fieldset className={s.decisions}>
+        <legend className={s.reviewLabel}>¿Qué haces con cada hábito la semana que viene?</legend>
+        {SLOTS.map((slot) => {
+          const key = `decision_${slot}`;
+          return (
+            <div key={slot} className={s.decisionRow}>
+              <span className={s.decisionName} id={`dec-${slot}`}>
+                {plan[slot].name}
+              </span>
+              <div className={s.segmented} role="radiogroup" aria-labelledby={`dec-${slot}`}>
+                {DECISIONS.map((d) => (
+                  <button
+                    key={d.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={value[key] === d.value}
+                    className={s.segment}
+                    onClick={() => update({ [key]: d.value })}
+                  >
+                    {d.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+        <p className={s.hint}>Bajar significa usar el medio o el mínimo como objetivo diario; subir, que el completo pasa a ser lo normal.</p>
+      </fieldset>
       <SaveState status={status} />
     </section>
   );

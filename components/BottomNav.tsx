@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import s from "./BottomNav.module.css";
 
-const ITEMS = [
+const ITEMS: { href: string; label: string; match?: string[]; icon: React.ReactNode }[] = [
   {
     href: "/hoy",
     label: "Hoy",
@@ -26,6 +26,18 @@ const ITEMS = [
     ),
   },
   {
+    href: "/sistema",
+    label: "Sistema",
+    match: ["/sistema", "/lecciones"],
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 4l8 4-8 4-8-4z" />
+        <path d="M4 12l8 4 8-4" />
+        <path d="M4 16l8 4 8-4" />
+      </svg>
+    ),
+  },
+  {
     href: "/perfil",
     label: "Perfil",
     icon: (
@@ -43,7 +55,7 @@ export function BottomNav() {
     <nav className={s.nav} aria-label="Navegación principal">
       <ul className={s.list}>
         {ITEMS.map((item) => {
-          const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const active = (item.match ?? [item.href]).some((m) => pathname === m || pathname.startsWith(`${m}/`));
           return (
             <li key={item.href}>
               <Link href={item.href} className={s.item} aria-current={active ? "page" : undefined}>

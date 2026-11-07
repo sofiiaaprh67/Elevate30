@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import { HabitCard } from "@/components/HabitCard";
 import { PillLink } from "@/components/ui/Pill";
+import { habitTip } from "@/content/habits";
 import { ENERGY_PHRASE, FREE_TIME_LABELS, OCCUPATION_LABELS } from "@/content/labels";
-import type { Energy, FreeTime, Occupation, Plan } from "@/lib/domain/types";
+import type { Energy, FreeTime, GoalType, Occupation, Plan } from "@/lib/domain/types";
 import s from "./plan.module.css";
 
 export function PlanView({
@@ -10,6 +11,7 @@ export function PlanView({
   occupation,
   freeTime,
   energy,
+  goalType,
   plan,
   cta,
   ctaHref = "/hoy",
@@ -19,6 +21,7 @@ export function PlanView({
   occupation?: Occupation;
   freeTime?: FreeTime;
   energy?: Energy;
+  goalType?: GoalType;
   plan: Plan;
   cta: string;
   ctaHref?: string;
@@ -40,9 +43,9 @@ export function PlanView({
         </header>
 
         <div className={s.cards}>
-          <HabitCard habit={plan.body} action={swap("body", plan.body.name)} />
-          <HabitCard habit={plan.mind} action={swap("mind", plan.mind.name)} />
-          <HabitCard habit={plan.goal} />
+          <HabitCard habit={plan.body} tip={habitTip(plan.body.key)} action={swap("body", plan.body.name)} />
+          <HabitCard habit={plan.mind} tip={habitTip(plan.mind.key)} action={swap("mind", plan.mind.name)} />
+          <HabitCard habit={plan.goal} tip={habitTip(plan.goal.key, goalType)} />
         </div>
 
         <p className={s.note}>

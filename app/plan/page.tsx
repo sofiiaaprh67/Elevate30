@@ -23,6 +23,7 @@ export default async function PlanPage() {
       occupation={intake.draft.occupation}
       freeTime={intake.draft.freeTime}
       energy={intake.draft.energy}
+      goalType={intake.draft.goalType}
       plan={plan}
       cta={cta}
       swap={(slot, habitName) => <SwapHabitButton slot={slot} habitName={habitName} />}

@@ -2,8 +2,18 @@
  * Frases "PARA TI": la parte personalizada de cada lección.
  * Edita aquí los textos. Cada día recibe el contexto de la persona.
  */
+import { FOUNDER_GOAL } from "@/lib/domain/calendar";
 import { generalDurations } from "@/lib/domain/plan";
-import { lowerFirst } from "@/lib/domain/stats";
+import type { ISODate } from "@/lib/domain/program";
+import {
+  daysDone,
+  groupByDate,
+  habitByScore,
+  lowerFirst,
+  percentFull,
+  streak,
+  type Checkin,
+} from "@/lib/domain/stats";
 import { AREAS, type Area, type Intake, type Plan, type Slot } from "@/lib/domain/types";
 import {
   AREA_LABELS,
@@ -12,6 +22,7 @@ import {
   FREE_TIME_PHRASE,
   WEEKDAY_PLURAL,
 } from "./labels";
+import { habitTip } from "./habits";
 
 export type ForYouContext = {
   intake: Intake;
@@ -21,6 +32,8 @@ export type ForYouContext = {
   percentFull: number;
   mostDone: Slot;
   leastDone: Slot;
+  /** Lo que escribió el día 1: «¿Qué quieres que sea distinto el día 30?» */
+  dayOneChange?: string;
 };
 
 const area = (a: Area) => lowerFirst(AREA_LABELS[a]);
@@ -64,6 +77,8 @@ export function forYouPhrase(day: number, c: ForYouContext): string | null {
   const occ = intake.occupation;
 
   switch (day) {
+    case 1:
+      return `${intake.name}, tu objetivo es «${intake.goalText}». Estos 30 días van de construir el sistema que te lleve hasta ahí.`;
     case 2: {
       const [a1, a2] = lowestTwoAreas(intake);
       return `Tus áreas con nota más baja son ${area(a1)} (${intake.wheel[a1]}/10) y ${area(a2)} (${intake.wheel[a2]}/10).`;
@@ -78,10 +93,18 @@ export function forYouPhrase(day: number, c: ForYouContext): string | null {
     }
     case 6:
       return `Tienes más energía ${ENERGY_PHRASE[intake.energy]}: pon «${plan.goal.name}» a las ${ENERGY_TIME[intake.energy]}.`;
+    case 7:
+      return statsPhrase(c);
+    case 8:
+      return `Tu mínimo de hoy: ${lowerFirst(plan.body.levels.min)}, ${lowerFirst(plan.mind.levels.min)} y ${lowerFirst(plan.goal.levels.min)}.`;
     case 9:
       if (occ === "study") return "Piensa en clases, entregas y tu bloque de estudio.";
       if (occ === "business") return "Una tarea que acerque ventas, una de producto y una personal.";
       return "Una de trabajo, una de tu objetivo y una personal.";
+    case 10: {
+      const tip = habitTip(plan.goal.key, intake.goalType);
+      return tip ? `Para «${plan.goal.name}»: ${lowerFirst(tip)}` : null;
+    }
     case 11:
       if (intake.exerciseDays === "none") return "Partes de cero: hoy basta con caminar.";
       if (intake.exerciseDays === "3+") return "Ya entrenas: hoy prioriza la calidad y la recuperación.";
@@ -92,30 +115,81 @@ export function forYouPhrase(day: number, c: ForYouContext): string | null {
         : "Ya duermes bien: protege ese horario.";
     case 13:
       return `Tu nota en alimentación es ${intake.wheel.nutrition}/10.`;
+    case 14:
+      return `Según tus datos, el hábito que más te cuesta es «${plan[c.leastDone].name}».`;
     case 16:
       return QUIT_PHRASES[intake.quitReason];
     case 17: {
       const h = plan[c.leastDone];
       return `El hábito que menos cumples es «${h.name}». Prueba con su nivel mínimo: ${lowerFirst(h.levels.min)}.`;
     }
+    case 18:
+      return plan.mind.key === "pause"
+        ? "Tu hábito de mente ya es la pausa mental: el suspiro cíclico te sirve como nivel mínimo."
+        : `Tu nota en mente es ${intake.wheel.mind}/10.`;
     case 19:
       return `Tu nota en relaciones es ${intake.wheel.relationships}/10.`;
     case 20:
       if (occ === "study") return "Pon una hora a partir de la cual no se estudia.";
       if (occ === "business") return "Emprender no tiene horario si tú no se lo pones: elige tu hora de cierre.";
       return "Elige una hora a partir de la cual no miras el trabajo.";
+    case 21:
+      return `«${plan[c.mostDone].name}» es el hábito que mejor te sale: puede ser el candidato a subir de nivel.`;
     case 22:
       return `El hábito que más cumples es «${plan[c.mostDone].name}».`;
+    case 23:
+      return `El hábito que menos cumples es «${plan[c.leastDone].name}»: es el mejor candidato para engancharlo a un ancla.`;
     case 24:
       if (occ === "study" || occ === "study_work") return "Piensa en tus semanas de exámenes.";
       if (occ === "business") return "Piensa en semanas de lanzamiento o de mucho trabajo.";
       return "Piensa en semanas de viaje o de picos de trabajo.";
+    case 25:
     case 26:
-    case 29:
+    case 28:
       return statsPhrase(c);
+    case 29:
+      return c.dayOneChange
+        ? `El día 1 escribiste: «${c.dayOneChange}». ${statsPhrase(c)}`
+        : statsPhrase(c);
+    case 30:
+      return c.daysDone >= FOUNDER_GOAL
+        ? `${statsPhrase(c)} Has conseguido la insignia Fundador.`
+        : statsPhrase(c);
     case 27:
       return `Ahora tu revisión es los ${WEEKDAY_PLURAL[intake.reviewWeekday]} a las ${intake.reviewTime}.`;
     default:
       return null;
   }
+}
+
+/** Calcula el contexto con los check-ins hasta `today` y devuelve la frase del día. */
+export function forYouForDay({
+  day,
+  intake,
+  plan,
+  checkins,
+  start,
+  today,
+  dayOneChange,
+}: {
+  day: number;
+  intake: Intake;
+  plan: Plan;
+  checkins: Checkin[];
+  start: ISODate;
+  today: ISODate;
+  dayOneChange?: string;
+}): string | null {
+  const byDate = groupByDate(checkins);
+  const past = checkins.filter((c) => c.date <= today);
+  return forYouPhrase(day, {
+    intake,
+    plan,
+    daysDone: daysDone(byDate, start, today),
+    streak: streak(byDate, start, today),
+    percentFull: percentFull(past),
+    mostDone: habitByScore(past, "most"),
+    leastDone: habitByScore(past, "least"),
+    dayOneChange,
+  });
 }

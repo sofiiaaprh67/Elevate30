@@ -6,7 +6,7 @@ import s from "./HabitCard.module.css";
 
 const LEVELS = ["full", "half", "min"] as const;
 
-export function HabitCard({ habit, action }: { habit: Habit; action?: ReactNode }) {
+export function HabitCard({ habit, tip, action }: { habit: Habit; tip?: string | null; action?: ReactNode }) {
   return (
     <article className={s.card} aria-labelledby={`habit-${habit.slot}`}>
       <div className={s.head}>
@@ -33,6 +33,12 @@ export function HabitCard({ habit, action }: { habit: Habit; action?: ReactNode 
           </li>
         ))}
       </ul>
+      {tip ? (
+        <p className={s.tip}>
+          <span className={s.tipLabel}>Cómo ponértelo fácil</span>
+          {tip}
+        </p>
+      ) : null}
       {action ? <div className={s.action}>{action}</div> : null}
     </article>
   );

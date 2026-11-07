@@ -95,14 +95,22 @@ describe("plan generado", () => {
       key: "walk",
       name: "Caminar",
       reason: "Partes de cero, así que lo primero es moverte sin presión.",
-      levels: { full: "Caminar 20 min", half: "Caminar 10 min", min: "Caminar 2 min o subir escaleras" },
+      levels: {
+        full: "Caminar 20 min a buen ritmo",
+        half: "Caminar 10 min (vale el trayecto a clase o al trabajo)",
+        min: "Ponerte las zapatillas y caminar 2 min",
+      },
       schedule: "Por la tarde",
     });
     expect(plan.mind).toMatchObject({ key: "connect", name: "Conectar", schedule: "Cuando mejor te venga" });
     expect(plan.goal).toMatchObject({
       name: "Bloque de estudio",
       reason: "Tu objetivo: «Aprobar Estadística»",
-      levels: { full: "20 min de trabajo enfocado", half: "10 min de trabajo enfocado", min: "2 min: solo el primer paso" },
+      levels: {
+        full: "20 min de estudio con el móvil fuera de la mesa",
+        half: "10 min repasando con preguntas o ejercicios",
+        min: "Abrir los apuntes y hacer 1 ejercicio",
+      },
       schedule: "A las 21:00",
     });
   });
@@ -112,7 +120,7 @@ describe("plan generado", () => {
     expect(generatePlan(intake({ ...base, exerciseDays: "1-2" })).body.levels).toEqual({
       full: "Entrenar 45 min",
       half: "20 min de ejercicio en casa",
-      min: "5 min de estiramientos",
+      min: "5 min de estiramientos o 10 sentadillas",
     });
     expect(generatePlan(intake({ ...base, exerciseDays: "3+" })).body).toMatchObject({
       name: "Moverte y recuperar",
@@ -132,7 +140,7 @@ describe("plan generado", () => {
       name: "Desconexión nocturna",
       reason: "Duermes menos de 7 horas: el descanso es tu base.",
       schedule: "Antes de dormir",
-      levels: { full: "Sin pantallas 30 min antes de dormir", min: "Dejar el móvil fuera de la cama" },
+      levels: { full: "Sin pantallas 30 min antes de dormir y a la cama a tu hora", min: "Dejar el móvil cargando fuera de la cama" },
     });
     const ok = generatePlan(intake({ sleepHours: "7-8", wheel: wheel({ rest: 3 }) })).body;
     expect(ok.reason).toBe("El descanso es de tus áreas con nota más baja.");
@@ -144,7 +152,7 @@ describe("plan generado", () => {
       levels: {
         full: "15 min de meditación o paseo sin móvil",
         half: "8 min escribiendo cómo estás",
-        min: "2 min respirando en silencio",
+        min: "2 min respirando despacio, en silencio",
       },
       schedule: "Antes de dormir",
     });

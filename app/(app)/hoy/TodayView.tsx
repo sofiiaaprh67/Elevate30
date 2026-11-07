@@ -1,13 +1,14 @@
-import { forYouPhrase } from "@/content/forYou";
-import { lessonForDay, REVIEW_DAYS } from "@/content/lessons";
+import { forYouForDay } from "@/content/forYou";
+import Link from "next/link";
+import { lessonForDay } from "@/content/lessons";
 import type { EntryKind } from "@/lib/data/progress";
 import { formatLongDate, phaseForDay, type ISODate } from "@/lib/domain/program";
-import { alerts, daysDone, groupByDate, habitByScore, percentFull, streak, type Checkin as CheckinRow } from "@/lib/domain/stats";
-import type { Intake, Plan, Wheel } from "@/lib/domain/types";
+import { alerts, groupByDate, streak, type Checkin as CheckinRow } from "@/lib/domain/stats";
+import type { Intake, Plan } from "@/lib/domain/types";
 import { DayRing } from "@/components/DayRing";
 import { PhaseStrip } from "@/components/PhaseStrip";
 import { Checkin } from "./Checkin";
-import { ActionCheck, ActionChoice, ActionText, ActionWheel, WeeklyReview } from "./LessonActions";
+import { LessonArticle } from "./LessonArticle";
 import h from "./hoy.module.css";
 
 /** Pantalla Hoy durante el programa (días 1–30). */
@@ -21,6 +22,7 @@ export function TodayView({
   checkins,
   actionDone,
   entries,
+  dayOneChange,
 }: {
   userId: string;
   start: ISODate;
@@ -31,23 +33,13 @@ export function TodayView({
   checkins: CheckinRow[];
   actionDone: boolean;
   entries: Partial<Record<EntryKind, Record<string, unknown>>>;
+  dayOneChange?: string;
 }) {
   const user = { id: userId };
   const lesson = lessonForDay(day)!;
   const byDate = groupByDate(checkins);
-  const pastCheckins = checkins.filter((c) => c.date <= today);
-  const phrase = forYouPhrase(day, {
-    intake,
-    plan,
-    daysDone: daysDone(byDate, start, today),
-    streak: streak(byDate, start, today),
-    percentFull: percentFull(pastCheckins),
-    mostDone: habitByScore(pastCheckins, "most"),
-    leastDone: habitByScore(pastCheckins, "least"),
-  });
+  const phrase = forYouForDay({ day, intake, plan, checkins, start, today, dayOneChange });
   const notices = alerts(byDate, plan, start, today, day);
-  const isReviewDay = (REVIEW_DAYS as readonly number[]).includes(day);
-  const action = lesson.action;
 
   const currentStreak = streak(byDate, start, today);
   const phase = phaseForDay(day);
@@ -94,65 +86,24 @@ export function TodayView({
         initial={Object.fromEntries(checkins.filter((c) => c.date === today).map((c) => [c.slot, c.level]))}
       />
 
-      <article className={h.lesson} aria-labelledby="lesson-title">
-        <p className={h.lessonMeta}>Lección {day} de 30</p>
-        <h2 className={h.lessonTitle} id="lesson-title">
-          {lesson.title}
-        </h2>
-        {lesson.videoUrl ? (
-          <video className={h.video} src={lesson.videoUrl} controls playsInline preload="metadata" />
-        ) : null}
-        <p className={h.lessonText}>{lesson.text}</p>
+      <LessonArticle
+        userId={user.id}
+        start={start}
+        day={day}
+        lesson={lesson}
+        phrase={phrase}
+        intake={intake}
+        plan={plan}
+        byDate={byDate}
+        actionDone={actionDone}
+        entries={entries}
+      />
 
-        {phrase ? (
-          <figure className={h.forYou}>
-            <figcaption className={h.forYouLabel}>Para ti</figcaption>
-            <blockquote>{phrase}</blockquote>
-          </figure>
-        ) : null}
-
-        <div className={h.action}>
-          <p className={h.actionLabel}>Acción de hoy</p>
-          {action.kind === "check" ? (
-            <ActionCheck userId={user.id} day={day} text={action.text} initialDone={actionDone} />
-          ) : action.kind === "text" ? (
-            <ActionText
-              userId={user.id}
-              day={day}
-              entry={action.entry}
-              text={action.text}
-              placeholder={action.placeholder}
-              initial={String(entries[action.entry]?.text ?? "")}
-            />
-          ) : action.kind === "choice" ? (
-            <ActionChoice
-              userId={user.id}
-              day={day}
-              entry={action.entry}
-              text={action.text}
-              options={action.options}
-              initial={(entries[action.entry]?.choice as string | undefined) ?? null}
-            />
-          ) : (
-            <ActionWheel
-              userId={user.id}
-              day={day}
-              text={action.text}
-              dayOne={intake.wheel}
-              initial={(entries.wheel_midpoint?.wheel as Wheel | undefined) ?? null}
-            />
-          )}
-        </div>
-      </article>
-
-      {isReviewDay ? (
-        <WeeklyReview
-          userId={user.id}
-          day={day}
-          initial={(entries.weekly_review as Record<string, string> | undefined) ?? {}}
-        />
+      {day > 1 ? (
+        <Link href="/lecciones" className={h.archiveLink}>
+          Ver las lecciones anteriores
+        </Link>
       ) : null}
-
     </>
   );
 }

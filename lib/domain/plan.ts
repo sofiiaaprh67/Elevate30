@@ -107,7 +107,7 @@ export function goalHabit(intake: Intake): Habit {
     area: "goal",
     name: GOAL_HABIT_NAMES[intake.goalType],
     reason: GOAL_HABIT.reason(intake.goalText),
-    levels: GOAL_HABIT.levels(generalDurations(intake.freeTime)),
+    levels: GOAL_HABIT.levels(intake.goalType, generalDurations(intake.freeTime)),
     schedule: SCHEDULES.at(ENERGY_TIME[intake.energy]),
   };
 }

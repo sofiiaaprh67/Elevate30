@@ -27,6 +27,7 @@ export default function DevPlan() {
       occupation={SAMPLE.occupation}
       freeTime={SAMPLE.freeTime}
       energy={SAMPLE.energy}
+      goalType={SAMPLE.goalType}
       plan={generatePlan(SAMPLE)}
       cta="Empezar mi día 1"
       ctaHref="/dev/plan"

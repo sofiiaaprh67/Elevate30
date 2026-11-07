@@ -26,7 +26,7 @@ npm run lint
 | --- | --- |
 | `app/` | Pantallas (`entrar`, `cuestionario`, `(app)/hoy`, `(app)/progreso`, `(app)/perfil`, `privacidad`) y rutas de auth |
 | `components/ui/` | Componentes base con el sistema visual de la landing (píldoras, tarjetas, campos) |
-| `content/` | Textos editables: lecciones, catálogo de hábitos, cuestionario, frases "PARA TI" |
+| `content/` | Textos editables: lecciones (idea, pasos, ciencia y acción), revisiones semanales, catálogo de hábitos con consejos, cuestionario, frases "PARA TI" |
 | `lib/domain/` | Reglas del programa en TypeScript puro, sin React ni Supabase (reutilizable en la app nativa) |
 | `lib/supabase/` | Clientes de Supabase para servidor, navegador y proxy |
 | `supabase/` | Esquema SQL, alta del admin y plantilla del email |
@@ -34,6 +34,14 @@ npm run lint
 | `app/dev/` | Vistas previas con datos de ejemplo (`/dev/cuestionario`, `/dev/plan`); solo existen con `npm run dev` |
 
 Los colores, tipografías y radios están en `app/globals.css` como variables, copiados de la landing.
+
+## Contenido del programa
+
+- Cada lección (`content/lessons.ts`) tiene la idea principal, un desarrollo corto, 2–4 pasos para aplicarla hoy, la evidencia que la respalda con su fuente y una acción.
+- Las lecciones con formulario (días 1, 3, 6, 16, 20, 22, 24 y 25) guardan sus respuestas en `entries` con `kind = 'lesson'`. Junto con la carta del día 29 y la elección del día 30 forman la pestaña **Sistema** (`lib/domain/system.ts`).
+- Las revisiones semanales (`content/reviews.ts`) muestran los check-ins de la semana, tienen preguntas propias de cada semana y una decisión por hábito (mantener, bajar o subir).
+- Las lecciones ya desbloqueadas se pueden reabrir en `/lecciones`.
+- Si cambias los textos de `content/habits.ts`, los planes ya guardados no se actualizan solos: genera el SQL con `npx tsx scripts/refresh-habits.ts filas.json` (instrucciones dentro del script).
 
 ## Configurar Supabase (una vez)
 

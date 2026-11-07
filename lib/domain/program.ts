@@ -84,3 +84,9 @@ const longDate = new Intl.DateTimeFormat("es-ES", {
 export function formatLongDate(date: ISODate): string {
   return longDate.format(new Date(toUTC(date)));
 }
+
+/** Día del programa para desbloquear contenido: 0 antes de empezar, 1–30 durante y 31 al terminar. */
+export function currentProgramDay(start: ISODate, today: ISODate): number {
+  const state = programState(start, today);
+  return state.kind === "before" ? 0 : state.kind === "finished" ? PROGRAM_DAYS + 1 : state.day;
+}

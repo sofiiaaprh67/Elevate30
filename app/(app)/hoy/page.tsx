@@ -45,10 +45,11 @@ export default async function HoyPage({ searchParams }: { searchParams: Promise<
   const plan = await getPlan(user.id);
   if (!intake || !plan) redirect("/cuestionario");
 
-  const [checkins, actionDone, entries] = await Promise.all([
+  const [checkins, actionDone, entries, dayOne] = await Promise.all([
     getCheckins(user.id),
     getLessonDone(user.id, state.day),
     getEntries(user.id, state.day),
+    state.day === 29 ? getEntries(user.id, 1) : Promise.resolve(null),
   ]);
 
   return (
@@ -62,6 +63,7 @@ export default async function HoyPage({ searchParams }: { searchParams: Promise<
       checkins={checkins}
       actionDone={actionDone}
       entries={entries}
+      dayOneChange={String(dayOne?.lesson?.change ?? "").trim() || undefined}
     />
   );
 }

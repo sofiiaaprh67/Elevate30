@@ -78,3 +78,15 @@
 .action {
   margin-top: var(--s-1);
 }
+.tip {
+  display: grid;
+  gap: 2px;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--porcelain);
+}
+.tipLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cyan);
+}
