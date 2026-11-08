@@ -3,7 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { env, isSupabaseConfigured } from "@/lib/env";
 
 /** Rutas que se pueden ver sin sesión. */
-const PUBLIC_PATHS = ["/entrar", "/auth", "/privacidad"];
+// /api/recordatorios lo llama Supabase cada 10 minutos (se protege con su propio secreto)
+const PUBLIC_PATHS = ["/entrar", "/auth", "/privacidad", "/api/recordatorios"];
 
 function isPublic(pathname: string) {
   if (process.env.NODE_ENV === "development" && pathname.startsWith("/dev")) return true;

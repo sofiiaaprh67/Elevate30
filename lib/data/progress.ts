@@ -52,3 +52,10 @@ export async function getDoneDays(userId: string): Promise<number[]> {
     .eq("action_done", true);
   return (data ?? []).map((r) => r.day as number);
 }
+
+/** Encuestas que la persona ya ha respondido. */
+export async function getAnsweredSurveys(userId: string): Promise<("d7" | "d15" | "d30")[]> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("surveys").select("survey").eq("user_id", userId);
+  return (data ?? []).map((r) => r.survey as "d7" | "d15" | "d30");
+}

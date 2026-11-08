@@ -3,9 +3,12 @@ import type { ReactNode } from "react";
 import type { ParticipantRow } from "@/lib/domain/admin";
 import { formatLongDate, type ISODate, type ProgramState } from "@/lib/domain/program";
 import s from "./admin.module.css";
+import p from "./pilot.module.css";
 
 export type AllowedEmail = { email: string; role: string; note: string | null; registered: boolean };
 export type PendingVideo = { id: number; week: number; url: string; who: string; submittedAt: string };
+/** Datos de la v2 por participante: su día, si entra en la app y la garantía. */
+export type ParticipantExtra = { day: string; lastOpen: string | null; counted: number; refund: ReactNode };
 
 const shortDate = new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short", timeZone: "UTC" });
 const fmt = (d: ISODate) => shortDate.format(new Date(`${d}T00:00:00Z`));
@@ -18,6 +21,9 @@ export function AdminView({
   videos,
   moderation,
   pendingReports = 0,
+  pilot,
+  surveys,
+  extra = {},
   forms,
 }: {
   state: ProgramState;
@@ -28,6 +34,11 @@ export function AdminView({
   /** Panel de denuncias de la comunidad. */
   moderation?: ReactNode;
   pendingReports?: number;
+  /** Métricas del piloto, fechas de inicio, niveles y lecciones. */
+  pilot?: ReactNode;
+  /** Resultados de las encuestas de los días 7, 15 y 30. */
+  surveys?: ReactNode;
+  extra?: Record<string, ParticipantExtra>;
   forms: {
     addEmails: ReactNode;
     startDate: ReactNode;
@@ -55,6 +66,21 @@ export function AdminView({
         <p className={s.status}>{status}</p>
       </header>
 
+      <nav className={p.jump} aria-label="Secciones">
+        {[
+          ["#metricas", "Métricas"],
+          ["#participantes", "Participantes"],
+          ["#encuestas", "Encuestas"],
+          ["#denuncias", `Denuncias${pendingReports ? ` (${pendingReports})` : ""}`],
+          ["#videos", "Vídeos"],
+          ["#lista", "Lista"],
+        ].map(([href, label]) => (
+          <a key={href} href={href}>
+            {label}
+          </a>
+        ))}
+      </nav>
+
       <dl className={s.summary}>
         <div>
           <dt>En la lista</dt>
@@ -70,13 +96,25 @@ export function AdminView({
         </div>
       </dl>
 
+      {pilot ? (
+        <section className={`${s.card} ${p.anchor}`} id="metricas" aria-labelledby="pilot-title">
+          <div className={s.cardHead}>
+            <h2 className={s.cardTitle} id="pilot-title">
+              Cómo va el piloto
+            </h2>
+            <p className={s.hint}>¿Vuelven tras un día malo? ¿Terminan? ¿Quieren seguir? Los objetivos son hipótesis: se revisan con los datos.</p>
+          </div>
+          {pilot}
+        </section>
+      ) : null}
+
       {/* ---------- Participantes ---------- */}
-      <section className={s.card} aria-labelledby="people-title">
+      <section className={`${s.card} ${p.anchor}`} id="participantes" aria-labelledby="people-title">
         <div className={s.cardHead}>
           <h2 className={s.cardTitle} id="people-title">
             Participantes
           </h2>
-          <p className={s.hint}>Resaltado: 2 o más días sin check-in.</p>
+          <p className={s.hint}>Resaltado: 2 o más días sin check-in. Escríbeles a mano: es el aviso inteligente del piloto.</p>
         </div>
         {sorted.length ? (
           <div className={s.tableWrap}>
@@ -84,10 +122,12 @@ export function AdminView({
               <thead>
                 <tr>
                   <th scope="col">Nombre</th>
+                  <th scope="col">Día</th>
                   <th scope="col">Último check-in</th>
-                  <th scope="col">Días con check-in</th>
+                  <th scope="col">Días que cuentan</th>
                   <th scope="col">Racha</th>
                   <th scope="col">Vídeos</th>
+                  <th scope="col">Garantía</th>
                 </tr>
               </thead>
               <tbody>
@@ -106,6 +146,10 @@ export function AdminView({
                         {r.email}
                       </a>
                     </th>
+                    <td data-label="Día">
+                      {extra[r.id]?.day ?? "—"}
+                      {extra[r.id]?.lastOpen ? <span className={s.sub}>Entró {extra[r.id]?.lastOpen}</span> : null}
+                    </td>
                     <td data-label="Último check-in">
                       {r.lastCheckin ? fmt(r.lastCheckin) : "Ninguno"}
                       {r.daysWithoutCheckin ? (
@@ -114,11 +158,17 @@ export function AdminView({
                         </span>
                       ) : null}
                     </td>
-                    <td data-label="Días con check-in">{r.daysDone}</td>
+                    <td data-label="Días que cuentan">{r.daysDone}</td>
                     <td data-label="Racha">{r.streak}</td>
                     <td data-label="Vídeos">
                       {r.videosApproved}
                       {r.videosPending ? <span className={s.sub}>{r.videosPending} por revisar</span> : null}
+                    </td>
+                    <td data-label="Garantía">
+                      {extra[r.id]?.refund ?? null}
+                      {extra[r.id] ? (
+                        <span className={s.sub}>{extra[r.id].counted >= 25 ? "Cumple el mínimo (25 días)" : `${extra[r.id].counted} de 25 días`}</span>
+                      ) : null}
                     </td>
                   </tr>
                 ))}
@@ -130,9 +180,22 @@ export function AdminView({
         )}
       </section>
 
+      {/* ---------- Encuestas ---------- */}
+      {surveys ? (
+        <section className={`${s.card} ${p.anchor}`} id="encuestas" aria-labelledby="surveys-title">
+          <div className={s.cardHead}>
+            <h2 className={s.cardTitle} id="surveys-title">
+              Encuestas
+            </h2>
+            <p className={s.hint}>Días 7, 15 y 30 de cada persona. Las respuestas escritas llevan el nombre de quien las escribió.</p>
+          </div>
+          {surveys}
+        </section>
+      ) : null}
+
       {/* ---------- Comunidad ---------- */}
       {moderation ? (
-        <section className={s.card} aria-labelledby="mod-title">
+        <section className={`${s.card} ${p.anchor}`} id="denuncias" aria-labelledby="mod-title">
           <h2 className={s.cardTitle} id="mod-title">
             Denuncias de la comunidad{pendingReports ? ` (${pendingReports})` : ""}
           </h2>
@@ -141,7 +204,7 @@ export function AdminView({
       ) : null}
 
       {/* ---------- Vídeos ---------- */}
-      <section className={s.card} aria-labelledby="videos-title">
+      <section className={`${s.card} ${p.anchor}`} id="videos" aria-labelledby="videos-title">
         <h2 className={s.cardTitle} id="videos-title">
           Vídeos por revisar
         </h2>
@@ -165,7 +228,7 @@ export function AdminView({
       </section>
 
       {/* ---------- Lista ---------- */}
-      <section className={s.card} aria-labelledby="list-title">
+      <section className={`${s.card} ${p.anchor}`} id="lista" aria-labelledby="list-title">
         <h2 className={s.cardTitle} id="list-title">
           Lista de participantes
         </h2>

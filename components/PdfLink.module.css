@@ -1,0 +1,52 @@
+.link {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  min-height: 64px;
+  padding: var(--s-3) var(--s-5) var(--s-3) var(--s-3);
+  border-radius: var(--r-tile);
+  background: var(--graphite);
+  box-shadow: var(--line);
+  color: var(--porcelain);
+  transition: box-shadow 0.2s var(--ease);
+}
+.link:hover {
+  text-decoration: none;
+  box-shadow: inset 0 0 0 1px var(--blue);
+}
+.link:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+.icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--brand-grad);
+  color: var(--white);
+}
+.icon svg {
+  width: 20px;
+  height: 20px;
+}
+.text {
+  display: grid;
+  gap: 2px;
+}
+.title {
+  font-weight: 600;
+  font-size: 16px;
+}
+.sub {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ash);
+}
+@media (prefers-reduced-motion: reduce) {
+  .link {
+    transition: none;
+  }
+}

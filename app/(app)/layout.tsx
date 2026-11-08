@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { BottomNav } from "@/components/BottomNav";
 import { requireUser } from "@/lib/auth";
+import { logEvent } from "@/lib/data/measure";
+import { programDay, todayInMadrid } from "@/lib/domain/program";
 import { onboardingPath } from "@/lib/onboarding";
 import { createClient } from "@/lib/supabase/server";
 import s from "./shell.module.css";
@@ -19,6 +21,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     committedAt: user.committedAt,
   });
   if (pending) redirect(pending);
+
+  // Registro de actividad: un "abrió la app" por día
+  const day = user.programStart ? Math.min(Math.max(programDay(user.programStart, todayInMadrid()), 0), 31) : 0;
+  await logEvent("open", day);
 
   return (
     <>

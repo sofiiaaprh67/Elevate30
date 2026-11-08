@@ -1,6 +1,8 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { DayRing } from "@/components/DayRing";
 import { PhaseStrip } from "@/components/PhaseStrip";
+import { ReadMarker } from "@/components/ReadMarker";
 import { forYouForDay } from "@/content/forYou";
 import { lessonForDay } from "@/content/lessons";
 import type { setHardWeek, setLightDay } from "@/lib/data/day";
@@ -38,6 +40,7 @@ export function TodayView({
   hardWeekUntil,
   light,
   pendingLesson,
+  survey,
   actions,
 }: {
   userId: string;
@@ -57,6 +60,8 @@ export function TodayView({
   light: boolean;
   /** Lección de ayer que quedó esperando por "Hoy voy justo". */
   pendingLesson: { day: number; title: string; href: string } | null;
+  /** Encuesta del piloto que toca hoy (días 7, 15 y 30). */
+  survey?: ReactNode;
   /** Server Actions (se pasan como props para poder previsualizar sin base de datos). */
   actions: {
     setLightDay: typeof setLightDay;
@@ -150,6 +155,8 @@ export function TodayView({
         initial={Object.fromEntries(checkins.filter((c) => c.date === today).map((c) => [c.slot, c.level]))}
       />
 
+      {survey}
+
       {notices.length ? (
         <section className={h.notices} aria-label="Avisos para hoy">
           {notices.map((n) => (
@@ -206,6 +213,7 @@ export function TodayView({
           hardWeekActive={hardWeek}
         />
       )}
+      {!light ? <ReadMarker day={day} /> : null}
 
       {day > 1 ? (
         <Link href="/lecciones" className={h.archiveLink}>

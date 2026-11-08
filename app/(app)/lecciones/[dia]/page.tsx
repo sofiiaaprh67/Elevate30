@@ -10,6 +10,7 @@ import { toIntake } from "@/lib/domain/intake";
 import { currentProgramDay, todayInMadrid } from "@/lib/domain/program";
 import { groupByDate } from "@/lib/domain/stats";
 import { getStartDate } from "@/lib/settings";
+import { ReadMarker } from "@/components/ReadMarker";
 import { LessonArticle } from "../../hoy/LessonArticle";
 import l from "../lecciones.module.css";
 
@@ -72,6 +73,7 @@ export default async function LeccionPage({ params }: { params: Promise<{ dia: s
         entries={entries}
         headingLevel={1}
       />
+      <ReadMarker day={day} />
     </>
   );
 }

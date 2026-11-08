@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
+import { PdfLink } from "@/components/PdfLink";
 import type { SystemPiece } from "@/lib/domain/system";
 import y from "./sistema.module.css";
 
@@ -43,6 +44,8 @@ export function SystemView({
           ))}
         </ol>
       </div>
+
+      {done ? <PdfLink /> : null}
 
       <ol className={y.pieces}>
         {open.map((p) => (

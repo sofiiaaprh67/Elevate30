@@ -65,3 +65,15 @@ export async function reviewVideo(id: number, status: "approved" | "rejected"): 
   revalidatePath("/admin");
   return { ok: true };
 }
+
+/** Apunta (o quita) que una persona ha pedido la garantía. */
+export async function setRefund(userId: string, on: boolean): Promise<AdminState> {
+  await requireAdmin();
+  const supabase = await createClient();
+  const { error } = on
+    ? await supabase.from("refunds").upsert({ user_id: userId }, { onConflict: "user_id", ignoreDuplicates: true })
+    : await supabase.from("refunds").delete().eq("user_id", userId);
+  if (error) return { ok: false, message: "No se ha podido guardar." };
+  revalidatePath("/admin");
+  return { ok: true };
+}

@@ -82,6 +82,27 @@ El servidor de correo incluido en Supabase solo envía unos pocos emails por hor
 - Iconos en `public/icons/`, generados desde el isotipo con `npm run icons`. Con un isotipo de 1024 px o en SVG: `node scripts/make-icons.mjs ruta/al/isotipo.png`.
 - `public/sw.js`: service worker básico. Guarda JS, CSS e iconos para abrir rápido; las páginas siempre van a la red (tienen datos personales) y sin conexión se muestra `public/offline.html`. Solo se registra en producción. Si lo cambias, sube `VERSION`.
 
+## Medir el piloto (Admin)
+
+- **Registro de actividad** (`events`): un «abrió la app» por persona y día, cada lección leída hasta el final, cada descarga del PDF y cada recordatorio abierto. Nunca interrumpe a la persona: si falla, no pasa nada.
+- **Encuestas** (`surveys`, textos en `content/surveys.ts`): aparecen en Hoy el día 7 (hasta el 14), el 15 (hasta el 29) y el 30 (y después de terminar). Quien responde «sí» al plan de 90 días entra en la lista de espera.
+- **Panel de Admin** → *Métricas*: las 10 métricas del plan con su objetivo y su alarma, la comparación por fecha de inicio, el reparto de niveles por semana y las lecciones leídas. En *Participantes*, el día de cada persona, cuándo entró por última vez y la garantía (el botón *Apuntar* registra que la ha pedido).
+- La lógica está en `lib/domain/metrics.ts` (con tests en `tests/measure.test.ts`).
+
+## Recordatorio diario (notificaciones push)
+
+- Cada persona activa los avisos en su móvil desde Hoy o Perfil. En iPhone solo funcionan con la app añadida a la pantalla de inicio (iOS 16.4 o posterior).
+- Cada 10 minutos, Supabase (`pg_cron` + `pg_net`) llama a `/api/recordatorios`. La base de datos decide a quién toca (`push_due`): desde su hora y durante 3 horas, una vez al día, del día 1 al 30 y solo si aún no ha hecho el check-in. El texto cambia en semana difícil, tras un día en blanco y en los días de revisión.
+- Las claves **no están en el repositorio ni en Vercel**: viven en la tabla `private.push_config` de Supabase (no se ve desde la API). La clave pública VAPID está en `lib/push-key.ts`.
+- **Montarlo en otro proyecto de Supabase:** genera claves con `npx web-push generate-vapid-keys`, guárdalas con
+  `insert into private.push_config (cron_secret, vapid_public, vapid_private) values ('<secreto de 32+ caracteres>', '<pública>', '<privada>');`,
+  pon la pública en `lib/push-key.ts` y ejecuta `supabase/cron/recordatorios.sql` (cambia la URL si la app está en otro dominio).
+- **Cambiar las claves VAPID** obliga a que todo el mundo vuelva a activar los avisos. Para cambiar solo el secreto, actualiza `cron_secret`: el aviso programado lo lee de la tabla.
+
+## Tu sistema en PDF
+
+`/sistema/pdf` genera el PDF en el momento (`lib/pdf/system-pdf.ts`, con `pdf-lib`): portada con la marca y las piezas escritas. Está disponible siempre, también después del día 30. Las imágenes de la marca van en `lib/pdf/brand-images.ts` (generado desde `public/brand`).
+
 ## Despliegue en Vercel
 
 1. **Sube el proyecto a GitHub** (repositorio privado) o usa la CLI: `npx vercel` desde esta carpeta.

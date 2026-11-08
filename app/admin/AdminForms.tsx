@@ -2,8 +2,9 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { PillButton } from "@/components/ui/Pill";
-import type { addEmails, AdminState, removeEmail, reviewVideo, updateStartDate } from "./actions";
+import type { addEmails, AdminState, removeEmail, reviewVideo, setRefund, updateStartDate } from "./actions";
 import s from "./admin.module.css";
+import p from "./pilot.module.css";
 
 function Message({ state }: { state: AdminState }) {
   if (!state.message) return null;
@@ -114,5 +115,27 @@ export function VideoReview({ id, action }: { id: number; action: typeof reviewV
         </span>
       ) : null}
     </div>
+  );
+}
+
+export function RefundToggle({ userId, on, name, action }: { userId: string; on: boolean; name: string; action: typeof setRefund }) {
+  const [pending, start] = useTransition();
+  return (
+    <button
+      type="button"
+      className={p.refund}
+      data-on={on || undefined}
+      disabled={pending}
+      aria-pressed={on}
+      aria-label={on ? `Quitar la solicitud de garantía de ${name}` : `Apuntar que ${name} ha pedido la garantía`}
+      onClick={() => {
+        if (!on && !window.confirm(`¿Apuntar que ${name} ha pedido la devolución?`)) return;
+        start(async () => {
+          await action(userId, !on);
+        });
+      }}
+    >
+      {on ? "Pedida" : "Apuntar"}
+    </button>
   );
 }

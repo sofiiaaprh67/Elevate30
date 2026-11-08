@@ -1,0 +1,253 @@
+/* Encuesta del piloto: tarjeta con un filo de marca arriba (se distingue de la lección). */
+.card {
+  position: relative;
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-5) var(--s-5) var(--s-5);
+  border-radius: var(--r-tile);
+  background: var(--graphite);
+  box-shadow: var(--line);
+  overflow: hidden;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: var(--brand-grad);
+}
+.meta {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cyan);
+}
+.title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--porcelain);
+}
+.text {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ash);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  margin-top: var(--s-2);
+}
+.later {
+  min-height: 44px;
+  padding: 0 var(--s-3);
+  border: 0;
+  border-radius: var(--r-pill);
+  background: none;
+  color: var(--ash);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.later:hover {
+  color: var(--porcelain);
+}
+.later:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+/* ---------- Formulario ---------- */
+.form {
+  display: grid;
+  gap: var(--s-6);
+  margin-top: var(--s-3);
+}
+.q {
+  display: grid;
+  gap: var(--s-2);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.qLabel {
+  display: block;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--porcelain);
+}
+.qNum {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--steel);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--porcelain);
+  vertical-align: 1px;
+}
+.optional {
+  font-weight: 500;
+  color: var(--ash);
+}
+.qHint {
+  font-size: 14px;
+  color: var(--ash);
+}
+.textarea {
+  width: 100%;
+  min-height: 76px;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: var(--r-field);
+  background: var(--obsidian);
+  box-shadow: var(--line-2);
+  color: var(--porcelain);
+  font: inherit;
+  font-size: 17px;
+  line-height: 1.45;
+  resize: vertical;
+}
+.textarea:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--cyan);
+}
+
+/* Opciones en lista */
+.choices {
+  display: grid;
+  gap: var(--s-2);
+}
+.choice {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 10px 16px 10px 48px;
+  border-radius: var(--r-field);
+  background: var(--obsidian);
+  box-shadow: var(--line-2);
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--porcelain);
+  cursor: pointer;
+  transition: box-shadow 0.2s var(--ease), background-color 0.2s;
+}
+.choice::before {
+  content: "";
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-top: -9px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--ash);
+  transition: box-shadow 0.2s var(--ease);
+}
+.choice:has(input:checked) {
+  background: rgba(0, 102, 255, 0.12);
+  box-shadow: inset 0 0 0 1.5px var(--blue);
+}
+.choice:has(input:checked)::before {
+  box-shadow: inset 0 0 0 5px var(--cyan);
+}
+.choice:has(input:focus-visible),
+.scaleItem:has(input:focus-visible) {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+.choice input,
+.scaleItem input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+/* Escala numérica: 5 en una fila; de 0 a 10, en dos filas de 6 */
+.scale {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+.scale[data-count="11"] {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.scaleItem {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 48px;
+  border-radius: var(--r-sm);
+  background: var(--obsidian);
+  box-shadow: var(--line-2);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  color: var(--porcelain);
+  cursor: pointer;
+  transition: box-shadow 0.2s var(--ease), background-color 0.2s;
+}
+.scaleItem:has(input:checked) {
+  background: var(--blue);
+  box-shadow: inset 0 0 0 1px var(--blue);
+  color: var(--white);
+}
+.scaleEnds {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-3);
+  font-size: 13px;
+  color: var(--ash);
+}
+.checks {
+  display: grid;
+  gap: var(--s-2);
+}
+.error {
+  font-size: 14px;
+  color: var(--danger);
+}
+
+/* ---------- Enviada ---------- */
+.doneTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--porcelain);
+}
+.doneTitle svg {
+  width: 22px;
+  height: 22px;
+  color: var(--cyan);
+}
+.waitlist {
+  padding: 12px 14px;
+  border-radius: var(--r-field);
+  background: rgba(0, 217, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(0, 217, 255, 0.3);
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--porcelain);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .choice,
+  .choice::before,
+  .scaleItem {
+    transition: none;
+  }
+}

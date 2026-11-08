@@ -230,3 +230,81 @@ describe("row level security", () => {
     expect((await as<{ v: boolean }>(ADMIN, `select public.has_access() as v`))[0].v).toBe(true);
   });
 });
+
+describe("fase D: medir el piloto y recordar cada día", () => {
+  const SECRET = "s".repeat(40);
+
+  it("registro de actividad: cada persona apunta lo suyo y solo el admin lo ve todo", async () => {
+    const log = `insert into events (user_id, kind, day) values ($1, 'open', 3) on conflict do nothing`;
+    await as(B, log, [B]);
+    await as(B, log, [B]); // dos veces el mismo día no falla
+    await expect(as(B, log, [ADMIN])).rejects.toThrow();
+    await expect(as(B, `insert into events (user_id, kind) values ($1, 'hack')`, [B])).rejects.toThrow();
+    await expect(as(B, `update events set day = 4`)).rejects.toThrow();
+    expect(await as(B, `select * from events`)).toHaveLength(1);
+    expect(await as(ADMIN, `select * from events`)).toHaveLength(1);
+  });
+
+  it("encuestas: se responden una vez y solo las ven quien responde y el admin", async () => {
+    await as(B, `insert into surveys (user_id, survey, answers) values ($1, 'd7', '{"sobra": "nada"}')`, [B]);
+    await expect(as(B, `insert into surveys (user_id, survey, answers) values ($1, 'd7', '{}')`, [B])).rejects.toThrow();
+    await expect(as(B, `update surveys set nps = 10`)).rejects.toThrow();
+    await expect(as(B, `insert into surveys (user_id, survey, nps) values ($1, 'd30', 11)`, [B])).rejects.toThrow();
+    await as(B, `insert into surveys (user_id, survey, nps, wants_more) values ($1, 'd30', 9, 'yes')`, [B]);
+    expect(await as(ADMIN, `select * from surveys`)).toHaveLength(2);
+    expect(await as(A, `select * from surveys`)).toHaveLength(0);
+  });
+
+  it("garantía: solo el equipo la apunta", async () => {
+    await expect(as(B, `insert into refunds (user_id) values ($1)`, [B])).rejects.toThrow();
+    await as(ADMIN, `insert into refunds (user_id, note) values ($1, 'Pidió la garantía por email')`, [B]);
+    expect(await as(B, `select * from refunds`)).toHaveLength(0);
+    expect(await as(ADMIN, `select * from refunds`)).toHaveLength(1);
+  });
+
+  it("push: la suscripción se guarda con la función y el recordatorio sale una vez al día", async () => {
+    await expect(
+      as(B, `insert into push_subscriptions (endpoint, user_id, p256dh, auth) values ('https://push.test/1', $1, 'k', 'a')`, [B]),
+    ).rejects.toThrow();
+    await as(B, `select save_push_subscription('https://push.test/b', 'key-b', 'auth-b')`);
+    expect(await as(B, `select endpoint from push_subscriptions`)).toEqual([{ endpoint: "https://push.test/b" }]);
+    // Ana ya no está en la lista: no puede suscribirse
+    await expect(as(A, `select save_push_subscription('https://push.test/a', 'k', 'a')`)).rejects.toThrow();
+
+    // Las claves no se ven desde la API
+    await expect(as(B, `select * from private.push_config`)).rejects.toThrow();
+    await db.query(`insert into private.push_config (cron_secret, vapid_public, vapid_private) values ($1, 'pub', 'priv')`, [SECRET]);
+    await expect(as(null, `select * from push_due('mal')`)).rejects.toThrow();
+    await expect(as(B, `select * from push_keys('mal')`)).rejects.toThrow();
+    expect(await as(null, `select vapid_private from push_keys($1)`, [SECRET])).toEqual([{ vapid_private: "priv" }]);
+
+    // Bea va por su día 5, eligió la hora de ahora y aún no ha hecho el check-in
+    await db.query(`
+      update profiles set program_start = (now() at time zone 'Europe/Madrid')::date - 4, anchor_slot = 'mind', hard_week_until = null where id = $1`, [B]);
+    await db.query(`
+      update intake set completed_at = now(), reminder_time = date_trunc('minute', (now() at time zone 'Europe/Madrid')::time)
+      where user_id = $1`, [B]);
+    await db.query(`
+      insert into user_habits (user_id, slot, habit_key, area, name, reason, level_full, level_half, level_min, schedule)
+      values ($1, 'mind', 'pause', 'mind', 'Pausa mental', 'r', 'f', 'h', '2 minutos respirando', 'noche')
+      on conflict (user_id, slot) do update set level_min = excluded.level_min`, [B]);
+    const due = await as<{ endpoint: string; title: string; body: string }>(null, `select * from push_due($1)`, [SECRET]);
+    expect(due).toHaveLength(1);
+    expect(due[0].title).toBe("ELEVATE 30 · Día 5");
+    // Ayer quedó en blanco: el mensaje es el de volver
+    expect(due[0].body).toContain("Ayer quedó en blanco");
+
+    await db.query(`insert into checkins (user_id, date, slot, level) values ($1, (now() at time zone 'Europe/Madrid')::date - 1, 'mind', 'min')`, [B]);
+    expect((await as<{ body: string }>(null, `select body from push_due($1)`, [SECRET]))[0].body).toContain("«2 minutos respirando» ya cuenta");
+
+    await as(null, `select push_mark_sent($1, array['https://push.test/b'], null)`, [SECRET]);
+    expect(await as(null, `select * from push_due($1)`, [SECRET])).toHaveLength(0);
+
+    // Con el check-in de hoy hecho tampoco se avisa; las suscripciones caducadas se borran
+    await db.query(`update push_subscriptions set last_sent_on = null`);
+    await db.query(`insert into checkins (user_id, date, slot, level) values ($1, (now() at time zone 'Europe/Madrid')::date, 'mind', 'min')`, [B]);
+    expect(await as(null, `select * from push_due($1)`, [SECRET])).toHaveLength(0);
+    await as(null, `select push_mark_sent($1, null, array['https://push.test/b'])`, [SECRET]);
+    expect(await db.query(`select * from push_subscriptions`).then((r) => r.rows)).toHaveLength(0);
+  });
+});
