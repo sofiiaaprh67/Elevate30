@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import type { SurveyId } from "@/content/surveys";
 import { getCurrentUserId, requireUser } from "@/lib/auth";
 import { validateSurvey, type SurveyInput } from "@/lib/domain/surveys";
@@ -32,6 +31,6 @@ export async function submitSurvey(id: SurveyId, input: SurveyInput): Promise<Su
   const { error } = await supabase.from("surveys").insert({ user_id: user.id, ...valid.row });
   // 23505: ya estaba respondida (por ejemplo, desde otra pestaña)
   if (error && error.code !== "23505") return { ok: false, error: "No hemos podido guardarlo. Inténtalo de nuevo." };
-  revalidatePath("/hoy");
+  // Sin revalidar Hoy: la tarjeta muestra el agradecimiento y desaparece en la próxima visita
   return { ok: true, waitlist: valid.row.wants_more === "yes" };
 }
