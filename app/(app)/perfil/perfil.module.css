@@ -1,22 +1,47 @@
 /* ---------- Identidad ---------- */
 .identity {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: var(--s-4);
-  padding: var(--s-4) 0 var(--s-2);
+  gap: var(--s-3);
+  padding: var(--s-3) 0 var(--s-1);
 }
-.avatar {
-  width: 60px;
-  height: 60px;
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--porcelain);
+  opacity: 0.85;
+}
+.idRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
+}
+.avatarWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.editBadge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: var(--brand-grad);
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 26px;
-  color: var(--white);
+  background: var(--obsidian);
+  box-shadow: inset 0 0 0 1.5px var(--porcelain);
+  color: var(--porcelain);
+}
+.editBadge svg {
+  width: 14px;
+  height: 14px;
+}
+.editBadge:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
 }
 .who {
   display: grid;
@@ -25,19 +50,24 @@
 }
 .name {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 30px;
+  font-weight: 700;
+  font-size: 34px;
   line-height: 1.05;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.035em;
+}
+.program {
+  font-size: 15px;
+  color: var(--porcelain);
 }
 .email {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--ash);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .badge {
+  justify-self: start;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -56,14 +86,26 @@
 
 /* ---------- Objetivo ---------- */
 .goal {
-  display: grid;
-  gap: 8px;
-  padding: var(--s-5);
-  border-radius: var(--r-tile);
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-4) var(--s-4) var(--s-5) var(--s-5);
+  border-radius: 22px;
   background:
-    radial-gradient(120% 120% at 0% 0%, rgba(0, 102, 255, 0.16), transparent 60%),
-    var(--carbon);
-  box-shadow: inset 0 0 0 1px var(--steel-2);
+    radial-gradient(120% 140% at 0% 0%, rgba(0, 102, 255, 0.18), transparent 60%),
+    var(--graphite);
+  box-shadow: inset 0 0 0 1px var(--steel);
+  color: var(--porcelain);
+}
+.goal:hover {
+  text-decoration: none;
+  box-shadow: inset 0 0 0 1px var(--blue);
+}
+.goalBody {
+  flex: 1;
+  display: grid;
+  gap: 6px;
+  min-width: 0;
 }
 .goalHead {
   display: flex;
@@ -72,22 +114,25 @@
   gap: var(--s-3);
 }
 .goalType {
-  padding: 3px 10px;
+  padding: 4px 11px;
   border-radius: var(--r-pill);
   box-shadow: var(--line-2);
   font-size: 12px;
   font-weight: 600;
-  color: var(--ash);
+  color: var(--porcelain);
 }
 .goalLabel {
-  font-size: 13px;
+  font-family: var(--font-display);
+  font-size: 11px;
   font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--cyan);
 }
 .goalText {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 21px;
+  font-weight: 700;
+  font-size: 20px;
   line-height: 1.25;
   letter-spacing: -0.02em;
   text-wrap: balance;
@@ -116,7 +161,7 @@
   align-items: center;
   gap: var(--s-3);
   min-height: 60px;
-  padding: 12px var(--s-4) 12px var(--s-5);
+  padding: 12px var(--s-4);
   color: var(--porcelain);
   cursor: pointer;
   transition: background-color 0.2s;
@@ -131,11 +176,23 @@
   outline-offset: -3px;
 }
 .slot {
-  width: 64px;
-  flex-shrink: 0;
-  font-size: 13px;
+  font-family: var(--font-display);
+  font-size: 11px;
   font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--cyan);
+}
+.habitTile {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--carbon);
+  box-shadow: inset 0 0 0 1px var(--steel-2);
+  color: var(--porcelain);
 }
 .rowMain {
   flex: 1;
@@ -340,4 +397,149 @@
   font-size: 15px;
   font-weight: 600;
   color: var(--cyan);
+}
+
+/* ---------- Tu programa: filas con icono ---------- */
+.listRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 56px;
+  padding: 10px var(--s-4);
+  color: var(--porcelain);
+  font-size: 15px;
+}
+.group > .listRow + .listRow,
+.group > .listRow + .reminder,
+.reminder > .listRow {
+  border-top: 1px solid var(--steel);
+}
+a.listRow:hover {
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.03);
+}
+.rowIcon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--ash);
+}
+.listLabel {
+  flex: 1;
+}
+.listValue {
+  display: grid;
+  justify-items: end;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.listSub {
+  font-size: 12px;
+  color: var(--ash);
+}
+.reminder {
+  display: grid;
+}
+.timeInline {
+  width: 112px;
+  min-height: 40px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--obsidian);
+  box-shadow: var(--line-2);
+  color: var(--porcelain);
+  font: inherit;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  color-scheme: dark;
+}
+.timeInline:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--cyan);
+}
+/* Interruptor */
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 50px;
+  height: 30px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--steel-2);
+  cursor: pointer;
+  transition: background-color 0.2s var(--ease);
+}
+.switch::after {
+  /* área táctil de 44px */
+  content: "";
+  position: absolute;
+  inset: -7px -2px;
+}
+.knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--porcelain);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s var(--ease);
+}
+.switch[aria-checked="true"] {
+  background: var(--blue);
+}
+.switch[aria-checked="true"] .knob {
+  transform: translateX(20px);
+}
+.switch:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.switch:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+.reminderHelp {
+  padding: 0 var(--s-4) var(--s-3) calc(var(--s-4) + 20px + var(--s-3));
+  margin-top: -4px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ash);
+}
+.reminder > .error,
+.reminder > .ok {
+  padding: 0 var(--s-4) var(--s-3);
+}
+.save {
+  margin: var(--s-2) var(--s-4) var(--s-4);
+  min-height: 52px;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #1a75ff 0%, var(--blue) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 8px 20px rgba(0, 102, 255, 0.35);
+  color: var(--white);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.save:hover {
+  background: var(--blue-hover);
+}
+.save:disabled {
+  opacity: 0.7;
+}
+.save:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .switch,
+  .knob {
+    transition: none;
+  }
 }

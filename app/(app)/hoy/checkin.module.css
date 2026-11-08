@@ -1,27 +1,8 @@
-/* Tarjeta principal de Hoy: la única con relieve */
+/* Check-in: cabecera y una tarjeta por hábito */
 .card {
-  position: relative;
   display: grid;
-  gap: var(--s-5);
-  padding: var(--s-6) var(--s-5) var(--s-5);
-  border-radius: var(--r-card);
-  background:
-    radial-gradient(120% 80% at 50% 0%, rgba(0, 102, 255, 0.14), transparent 60%),
-    var(--carbon);
-  box-shadow: inset 0 0 0 1px var(--steel-2);
+  gap: var(--s-3);
 }
-.card::before {
-  /* filo superior con el degradado de la marca */
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 28px;
-  right: 28px;
-  height: 1px;
-  background: var(--brand-grad);
-  opacity: 0.7;
-}
-
 .head {
   display: flex;
   justify-content: space-between;
@@ -30,9 +11,9 @@
 }
 .title {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 24px;
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.02em;
 }
 .status {
   display: inline-flex;
@@ -59,21 +40,40 @@
   box-shadow: inset 0 0 0 1px rgba(0, 217, 255, 0.5);
   color: var(--cyan);
 }
-.card[data-counts]::before {
-  opacity: 1;
-}
 
 .list {
   display: grid;
-  gap: var(--s-5);
+  gap: var(--s-3);
 }
 .row {
   display: grid;
-  gap: 10px;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-3) var(--s-3);
+  border-radius: 22px;
+  background: var(--graphite);
+  box-shadow: inset 0 0 0 1px var(--steel);
 }
 .rowHead {
   display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: var(--s-3);
+  align-items: center;
+  padding: 2px 4px 0;
+}
+.tile {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--carbon);
+  box-shadow: inset 0 0 0 1px var(--steel-2);
+  color: var(--porcelain);
+}
+.rowText {
+  display: grid;
   gap: 2px;
+  min-width: 0;
 }
 .name {
   display: flex;
@@ -81,9 +81,9 @@
   align-items: center;
   gap: 6px 8px;
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 18px;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.015em;
 }
 .anchor,
 .optional {
@@ -114,7 +114,6 @@
   opacity: 0.8;
 }
 .detail {
-  min-height: 21px;
   font-size: 14px;
   line-height: 1.45;
   color: var(--ash);
@@ -137,8 +136,7 @@
   color: var(--cyan);
 }
 .rule {
-  padding-top: var(--s-3);
-  border-top: 1px solid var(--steel);
+  padding: 0 var(--s-1);
   font-size: 13px;
   color: var(--ash);
 }
@@ -151,7 +149,7 @@
   padding: 4px;
   border-radius: 16px;
   background: var(--obsidian);
-  box-shadow: inset 0 0 0 1px var(--steel);
+  box-shadow: inset 0 0 0 1px rgba(36, 50, 74, 0.6);
 }
 .thumb {
   position: absolute;

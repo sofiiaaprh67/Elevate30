@@ -1,3 +1,4 @@
+import { AppBar } from "@/components/AppBar";
 import { ProgressView } from "@/app/(app)/progreso/ProgressView";
 import s from "@/app/(app)/shell.module.css";
 import { BottomNav } from "@/components/BottomNav";
@@ -44,6 +45,7 @@ export default async function DevProgreso({ searchParams }: { searchParams: Prom
   return (
     <>
       <main id="contenido" className={s.main}>
+        <AppBar name="Lucía" profileHref="/dev/perfil" homeHref="/dev/hoy" />
         <ProgressView
           start={DEFAULT_START_DATE}
           today={today}

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { DayRing } from "@/components/DayRing";
 import { PhaseStrip } from "@/components/PhaseStrip";
 import { ReadMarker } from "@/components/ReadMarker";
 import { forYouForDay } from "@/content/forYou";
@@ -17,12 +16,45 @@ import h from "./hoy.module.css";
 
 const PHASE_NAME = { DECIDIR: "Decidir", CUMPLIR: "Cumplir", REVISAR: "Revisar", REPETIR: "Repetir", CIERRE: "Cierre" };
 const PHASE_LINE = {
-  DECIDIR: "Esta semana decides cómo será tu sistema.",
-  CUMPLIR: "Esta semana el objetivo es no dejar días en blanco.",
-  REVISAR: "Esta semana ajustas con tus datos.",
-  REPETIR: "Esta semana conviertes el esfuerzo en costumbre.",
-  CIERRE: "Los dos últimos días: mira lo construido y decide lo que sigue.",
+  DECIDIR: "Decide cómo será tu sistema.",
+  CUMPLIR: "Un paso posible para hoy.",
+  REVISAR: "Ajusta con tus datos.",
+  REPETIR: "Que se vuelva costumbre.",
+  CIERRE: "Mira lo que has construido.",
 };
+
+const dayFmt = new Intl.DateTimeFormat("es-ES", { weekday: "long", day: "numeric", month: "short", timeZone: "UTC" });
+/** "sábado, 7 nov" (se muestra en versalitas) */
+const shortDay = (d: ISODate) => dayFmt.format(new Date(`${d}T00:00:00Z`)).replace(".", "");
+
+/** Esfera del día: el arco avanza con el programa. */
+function DayDial({ day }: { day: number }) {
+  const r = 40;
+  const c = 2 * Math.PI * r;
+  return (
+    <div className={h.dial} aria-hidden="true">
+      <svg viewBox="0 0 100 100">
+        <defs>
+          <linearGradient id="dial-grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#00D9FF" />
+            <stop offset="1" stopColor="#7FEBFF" />
+          </linearGradient>
+        </defs>
+        <circle cx="50" cy="50" r={r} className={h.dialTrack} />
+        <circle
+          cx="50"
+          cy="50"
+          r={r}
+          className={h.dialArc}
+          strokeDasharray={`${(c * Math.min(day, 30)) / 30} ${c}`}
+          transform="rotate(-90 50 50)"
+        />
+      </svg>
+      <span className={h.dialNum}>{String(day).padStart(2, "0")}</span>
+      <span className={h.dialOf}>/ 30</span>
+    </div>
+  );
+}
 
 /** Pantalla Hoy durante el programa (días 1–30). */
 export function TodayView({
@@ -91,10 +123,10 @@ export function TodayView({
 
   return (
     <>
-      {/* ---------- Panel del día ---------- */}
-      <header className={h.hero}>
-        <div className={h.heroTop}>
-          <p className={h.date}>{capitalize(formatLongDate(today))}</p>
+      {/* ---------- Saludo ---------- */}
+      <header className={h.greet}>
+        <div className={h.greetTop}>
+          <p className={h.date}>{shortDay(today)}</p>
           {currentStreak > 0 || risk ? (
             <p className={h.streak} data-risk={risk || undefined}>
               <svg viewBox="0 0 16 16" aria-hidden="true">
@@ -104,25 +136,29 @@ export function TodayView({
             </p>
           ) : null}
         </div>
-        <h1 className="sr-only">Hoy, día {day} de 30</h1>
-        <div className={h.heroMain}>
-          <DayRing start={start} today={today} day={day} byDate={byDate} compact />
-          <div className={h.heroInfo}>
-            <p className={h.phaseName}>{PHASE_NAME[phase]}</p>
-            <p className={h.phaseLine}>{PHASE_LINE[phase]}</p>
-            <ul className={h.heroFacts}>
-              <li>{phase === "CIERRE" ? "Cierre" : `Semana ${week} de 4`}</li>
-              <li>{reviewLine}</li>
-            </ul>
-          </div>
-        </div>
-        <PhaseStrip phase={phase} />
-        {risk ? (
-          <p className={h.riskNote}>
-            Ayer quedó en blanco. Haz hoy al menos un mínimo y tu racha sigue: solo se rompe con dos días seguidos.
-          </p>
-        ) : null}
+        <h1 className={h.hello}>
+          {hardWeek ? "Semana difícil" : light ? "Hoy, lo mínimo" : "A tu ritmo"}, {intake.name}.
+          <span className="sr-only"> Día {day} de 30.</span>
+        </h1>
       </header>
+
+      {/* ---------- Fase y día ---------- */}
+      <section className={h.phaseCard} aria-label={`Fase ${PHASE_NAME[phase]}, día ${day} de 30`}>
+        <div className={h.phaseText}>
+          <p className={h.phaseWeek}>{phase === "CIERRE" ? "Cierre" : `Semana ${String(week).padStart(2, "0")}`}</p>
+          <p className={h.phaseName}>{PHASE_NAME[phase]}</p>
+          <p className={h.phaseLine}>{PHASE_LINE[phase]}</p>
+        </div>
+        <DayDial day={day} />
+      </section>
+
+      <PhaseStrip phase={phase} />
+
+      {risk ? (
+        <p className={h.riskNote}>
+          Ayer quedó en blanco. Haz hoy al menos un mínimo y tu racha sigue: solo se rompe con dos días seguidos.
+        </p>
+      ) : null}
 
       {/* ---------- Adaptación: modo del día y semana difícil ---------- */}
       {hardWeek ? (
@@ -154,6 +190,17 @@ export function TodayView({
         onSaved={actions.publishMilestones}
         initial={Object.fromEntries(checkins.filter((c) => c.date === today).map((c) => [c.slot, c.level]))}
       />
+
+      <Link href="/lecciones" className={h.reviewRow}>
+        <svg className={h.reviewIcon} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+          <rect x="3" y="4.5" width="14" height="12.5" rx="2.5" />
+          <path d="M3 8.5h14M7 2.5v4M13 2.5v4" />
+        </svg>
+        <span>{reviewLine}</span>
+        <svg className={h.reviewArrow} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M3 8h10M9 4l4 4-4 4" />
+        </svg>
+      </Link>
 
       {survey}
 
@@ -222,8 +269,4 @@ export function TodayView({
       ) : null}
     </>
   );
-}
-
-function capitalize(text: string) {
-  return text.charAt(0).toLocaleUpperCase("es-ES") + text.slice(1);
 }

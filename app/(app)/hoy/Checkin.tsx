@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { HabitIcon } from "@/components/HabitIcon";
 import { LevelIcon } from "@/components/LevelIcon";
 import { LEVEL_LABELS } from "@/content/labels";
 import type { ISODate } from "@/lib/domain/program";
@@ -14,7 +15,16 @@ const LEVELS: Level[] = ["full", "half", "min", "skip"];
 const lowerFirst = (t: string) => (t ? t[0].toLocaleLowerCase("es-ES") + t.slice(1) : t);
 
 export const AnchorIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
     <circle cx="12" cy="5" r="2" />
     <path d="M12 7v13M5 13a7 7 0 0 0 14 0M8 10h8" />
   </svg>
@@ -84,7 +94,15 @@ export function Checkin({
         <p className={s.status} data-counts={counts || undefined} aria-live="polite">
           {counts ? (
             <>
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
                 <path d="M3.5 8.5l3 3 6-7" />
               </svg>
               Hoy ya cuenta
@@ -185,19 +203,24 @@ function HabitRow({
   return (
     <div className={s.row} data-optional={optional || undefined}>
       <div className={s.rowHead}>
-        <p className={s.name} id={labelId}>
-          {habit.name}
-          {isAnchor ? (
-            <span className={s.anchor}>
-              <AnchorIcon />
-              Ancla
-            </span>
-          ) : null}
-          {optional ? <span className={s.optional}>{optionalText}</span> : null}
-        </p>
-        <p className={s.detail} data-tone={tone} aria-live="polite">
-          {detail}
-        </p>
+        <span className={s.tile} aria-hidden="true">
+          <HabitIcon slot={slot} habitKey={habit.key} />
+        </span>
+        <div className={s.rowText}>
+          <p className={s.name} id={labelId}>
+            {habit.name}
+            {isAnchor ? (
+              <span className={s.anchor}>
+                <AnchorIcon />
+                Ancla
+              </span>
+            ) : null}
+            {optional ? <span className={s.optional}>{optionalText}</span> : null}
+          </p>
+          <p className={s.detail} data-tone={tone} aria-live="polite">
+            {detail}
+          </p>
+        </div>
       </div>
       <div
         className={s.seg}

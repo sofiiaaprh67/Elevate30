@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
+import { HabitIcon } from "@/components/HabitIcon";
 import { LevelIcon } from "@/components/LevelIcon";
 import { PageHeader, SectionTitle } from "@/components/PageHeader";
 import { AREA_LABELS, LEVEL_LABELS } from "@/content/labels";
 import { buildCalendar, FOUNDER_GOAL, VIDEO_GOAL } from "@/lib/domain/calendar";
-import { formatLongDate, type ISODate, type ProgramState } from "@/lib/domain/program";
-import { countsBySlot, daysDone, groupByDate, percentFull, streak, type Checkin } from "@/lib/domain/stats";
+import { dateForDay, formatLongDate, formatShortDate, PROGRAM_DAYS, type ISODate, type ProgramState } from "@/lib/domain/program";
+import { countsBySlot, daysDone, groupByDate, isDone, percentFull, streak, type Checkin } from "@/lib/domain/stats";
 import { AREAS, SLOTS, type Plan, type Wheel } from "@/lib/domain/types";
 import p from "./progreso.module.css";
 
@@ -49,16 +50,22 @@ export function ProgressView({
   const counts = countsBySlot(past);
   const approved = videos.filter((v) => v.status === "approved").length;
   const pending = videos.filter((v) => v.status === "pending").length;
+  const dayLabel =
+    state.kind === "before" ? "Antes del día 1" : state.kind === "active" ? `Día ${String(state.day).padStart(2, "0")} / 30` : "30 / 30";
   const subtitle =
     state.kind === "before"
       ? `Empiezas el ${formatLongDate(start)}.`
       : state.kind === "active"
-        ? `Día ${state.day} de 30. Un día cuenta si haces al menos un hábito, aunque sea en mínimo.`
+        ? "La constancia también tiene días mínimos."
         : "Has completado los 30 días.";
+  // Puntos por hábito: los últimos 7 días del programa hasta hoy
+  const lastDay = state.kind === "before" ? 0 : state.kind === "active" ? state.day : PROGRAM_DAYS;
+  const recent = Array.from({ length: Math.min(7, lastDay) }, (_, i) => dateForDay(start, lastDay - Math.min(7, lastDay) + 1 + i));
+  const end = dateForDay(start, PROGRAM_DAYS);
 
   return (
     <>
-      <PageHeader title="Tu progreso" subtitle={subtitle} />
+      <PageHeader eyebrow={dayLabel} title="Tu progreso." subtitle={subtitle} />
 
       <dl className={p.stats}>
         <div>
@@ -66,7 +73,7 @@ export function ProgressView({
           <dd>{done}</dd>
         </div>
         <div>
-          <dt>de racha flexible</dt>
+          <dt>racha flexible</dt>
           <dd>{currentStreak}</dd>
         </div>
         <div>
@@ -80,8 +87,10 @@ export function ProgressView({
 
       {/* ---------- Calendario ---------- */}
       <section aria-labelledby="cal-title">
-        <SectionTitle id="cal-title">Tus 30 días</SectionTitle>
-        <div className={p.panel}>
+        <SectionTitle id="cal-title" hint={`${formatShortDate(start)} — ${formatShortDate(end)}`}>
+          Tus 30 días
+        </SectionTitle>
+        <div className={p.calWrap}>
           <div className={p.calendar} role="grid" aria-labelledby="cal-title">
             <div className={p.calRow} role="row">
               {WEEK_HEAD.map((d) => (
@@ -104,12 +113,12 @@ export function ProgressView({
                       data-future={cell.future || undefined}
                       data-today={cell.today || undefined}
                       aria-label={`Día ${cell.day}${cell.today ? ", hoy" : ""}: ${
-                        cell.future ? "por llegar" : cell.level ? LEVEL_LABELS[cell.level] : "sin cumplir"
+                        cell.future ? "por llegar" : cell.level ? LEVEL_LABELS[cell.level] : cell.today ? "pendiente" : "sin cumplir"
                       }`}
                       aria-current={cell.today ? "date" : undefined}
                     >
                       <span className={p.dayNum}>{cell.day}</span>
-                      {cell.level ? <LevelIcon level={cell.level} size={12} /> : null}
+                      {cell.level ? <LevelIcon level={cell.level} size={11} /> : null}
                     </span>
                   ),
                 )}
@@ -119,19 +128,13 @@ export function ProgressView({
           <ul className={p.legend} aria-label="Leyenda">
             {DONE_LEVELS.map((l) => (
               <li key={l}>
-                <span className={p.swatch} data-level={l}>
-                  <LevelIcon level={l} size={10} />
-                </span>
+                <LevelIcon level={l} size={14} />
                 {LEVEL_LABELS[l]}
               </li>
             ))}
             <li>
-              <span className={p.swatch} data-level="none" />
-              Sin cumplir
-            </li>
-            <li>
-              <span className={p.swatch} data-today />
-              Hoy
+              <span className={p.swatch} />
+              Pendiente
             </li>
           </ul>
         </div>
@@ -139,36 +142,55 @@ export function ProgressView({
 
       {/* ---------- Por hábito ---------- */}
       <section aria-labelledby="habits-title">
-        <SectionTitle id="habits-title">Por hábito</SectionTitle>
-        <div className={p.panel}>
+        <SectionTitle id="habits-title" hint={recent.length ? "Últimos 7 días" : undefined}>
+          Por hábito
+        </SectionTitle>
+        <ul className={p.habits}>
           {SLOTS.map((slot) => {
             const c = counts[slot];
             const total = c.full + c.half + c.min;
             return (
-              <div key={slot} className={p.habitRow}>
-                <p className={p.habitHead}>
+              <li key={slot} className={p.habitRow}>
+                <span className={p.habitIcon} aria-hidden="true">
+                  <HabitIcon slot={slot} habitKey={plan[slot].key} size={18} />
+                </span>
+                <span className={p.habitText}>
                   <span className={p.habitName}>{plan[slot].name}</span>
                   <span className={p.habitTotal}>
                     {total} {total === 1 ? "día" : "días"}
-                  </span>
-                </p>
-                <div className={p.stack} aria-hidden="true">
-                  {total
-                    ? DONE_LEVELS.map((l) => (c[l] ? <span key={l} data-level={l} style={{ flexGrow: c[l] }} /> : null))
-                    : null}
-                </div>
-                <p className={p.habitCounts}>
-                  {DONE_LEVELS.map((l) => (
-                    <span key={l}>
-                      <LevelIcon level={l} size={12} /> {LEVEL_LABELS[l]} {c[l]}
+                    <span className="sr-only">
+                      : {DONE_LEVELS.map((l) => `${LEVEL_LABELS[l]} ${c[l]}`).join(", ")}
                     </span>
-                  ))}
-                </p>
-              </div>
+                  </span>
+                </span>
+                <span className={p.dots} aria-hidden="true">
+                  {recent.map((date) => {
+                    const level = byDate[date]?.[slot];
+                    return level && isDone(level) ? (
+                      <LevelIcon key={date} level={level} size={12} />
+                    ) : (
+                      <span key={date} className={p.dot} data-today={date === today || undefined} />
+                    );
+                  })}
+                </span>
+              </li>
             );
           })}
-        </div>
+        </ul>
       </section>
+
+      <p className={p.minNote}>
+        <span className={p.minIcon} aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M8 12.5l2.6 2.6L16 9.5" />
+          </svg>
+        </span>
+        <span>
+          <strong>Un mínimo también cuenta.</strong>
+          <span className={p.minSub}>La constancia se construye paso a paso.</span>
+        </span>
+      </p>
 
       {/* ---------- Recompensas ---------- */}
       <section aria-labelledby="rewards-title">

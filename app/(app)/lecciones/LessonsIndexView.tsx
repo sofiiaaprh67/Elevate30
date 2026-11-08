@@ -28,7 +28,8 @@ export function LessonsIndexView({
   return (
     <>
       <PageHeader
-        title="Lecciones"
+        eyebrow="El método"
+        title="Lecciones."
         subtitle={
           currentDay === 0
             ? "Se desbloquea una cada día a partir del día 1."

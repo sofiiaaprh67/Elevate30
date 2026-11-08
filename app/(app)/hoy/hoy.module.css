@@ -12,9 +12,13 @@
   min-height: 32px;
 }
 .date {
-  font-size: 15px;
+  font-family: var(--font-display);
+  font-size: 12px;
   font-weight: 600;
-  color: var(--ash);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--porcelain);
+  opacity: 0.85;
 }
 .streak {
   display: inline-flex;
@@ -517,18 +521,26 @@
 /* =====================================================================
    v2: panel del día (anillo compacto + fase), adaptación y avisos
    ===================================================================== */
-.hero {
-  position: relative;
+/* ---------- Saludo ---------- */
+.greet {
   display: grid;
-  gap: var(--s-4);
-  padding: var(--s-2) 0 var(--s-1);
+  gap: 6px;
+  padding: var(--s-3) 0 var(--s-1);
 }
-.heroTop {
+.greetTop {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: var(--s-3);
   min-height: 32px;
+}
+.hello {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(28px, 7.6vw, 36px);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
 }
 .streak[data-risk] {
   background: rgba(255, 210, 122, 0.1);
@@ -537,46 +549,122 @@
 .streak[data-risk] svg {
   color: var(--warn);
 }
-.heroMain {
+
+/* ---------- Tarjeta de fase: el único bloque de color pleno de Hoy ---------- */
+.phaseCard {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: var(--s-5);
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-5) var(--s-5) var(--s-5) var(--s-6);
+  border-radius: var(--r-tile);
+  background:
+    radial-gradient(90% 120% at 100% 0%, rgba(0, 217, 255, 0.28), transparent 55%),
+    linear-gradient(135deg, #0a5cff 0%, #0647c9 45%, #062a78 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 18px 40px rgba(0, 72, 200, 0.35);
+  overflow: hidden;
 }
-.heroInfo {
+.phaseText {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
+}
+.phaseWeek {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
 }
 .phaseName {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 30px;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  background: var(--brand-grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--white);
 }
 .phaseLine {
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.4;
+  color: rgba(255, 255, 255, 0.88);
+}
+.dial {
+  position: relative;
+  flex-shrink: 0;
+  width: 104px;
+  height: 104px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  border-radius: 50%;
+  background: rgba(3, 6, 12, 0.35);
+}
+.dial svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.dialTrack {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.16);
+  stroke-width: 6;
+}
+.dialArc {
+  fill: none;
+  stroke: url(#dial-grad);
+  stroke-width: 6;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px rgba(0, 217, 255, 0.6));
+}
+.dialNum {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--white);
+}
+.dialOf {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ---------- Próxima revisión ---------- */
+.reviewRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 52px;
+  padding: 0 var(--s-4);
+  border-radius: var(--r-field);
+  background: var(--graphite);
+  box-shadow: var(--line);
+  font-size: 15px;
   color: var(--porcelain);
 }
-.heroFacts {
-  list-style: none;
-  margin: 2px 0 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+.reviewRow:hover {
+  text-decoration: none;
+  box-shadow: inset 0 0 0 1px var(--blue);
 }
-.heroFacts li {
-  padding: 4px 10px;
-  border-radius: var(--r-pill);
-  box-shadow: inset 0 0 0 1px var(--steel-2);
-  font-size: 12px;
-  font-weight: 600;
+.reviewRow span {
+  flex: 1;
+}
+.reviewIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--ash);
+}
+.reviewArrow {
+  width: 18px;
+  height: 18px;
   color: var(--ash);
 }
 .riskNote {

@@ -1,3 +1,4 @@
+import { AppBar } from "@/components/AppBar";
 import s from "@/app/(app)/shell.module.css";
 import { Composer } from "@/components/community/Composer";
 import c from "@/components/community/community.module.css";
@@ -75,7 +76,8 @@ export default function DevComunidad() {
   return (
     <>
       <main id="contenido" className={s.main}>
-        <PageHeader title="Comunidad" subtitle="24 personas en la Cohorte Fundadora." />
+        <AppBar name="Lucía" profileHref="/dev/perfil" homeHref="/dev/hoy" />
+        <PageHeader eyebrow="Cohorte Fundadora" title="Comunidad." subtitle="24 personas en la Cohorte Fundadora." />
         <nav className={c.filters} aria-label="Qué publicaciones ver">
           <a href="#" className={c.filter} aria-current="page">
             Todos

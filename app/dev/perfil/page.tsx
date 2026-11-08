@@ -1,5 +1,6 @@
+import { AppBar } from "@/components/AppBar";
 import { ProfileView } from "@/app/(app)/perfil/ProfileView";
-import { ReminderForm } from "@/app/(app)/perfil/ReminderForm";
+import { ReminderSettings } from "@/app/(app)/perfil/ReminderSettings";
 import s from "@/app/(app)/shell.module.css";
 import { BottomNav } from "@/components/BottomNav";
 import pf from "@/app/(app)/perfil/perfil.module.css";
@@ -7,7 +8,6 @@ import { generatePlan } from "@/lib/domain/plan";
 import type { Intake } from "@/lib/domain/types";
 import { devUpdateReminder } from "../actions-perfil";
 import { devPush } from "../actions-measure";
-import { PushSettings } from "@/components/Push";
 
 const SAMPLE: Intake = {
   name: "Lucía",
@@ -34,6 +34,7 @@ export default function DevPerfil() {
   return (
     <>
       <main id="contenido" className={s.main}>
+        <AppBar name="Lucía" profileHref="/dev/perfil" homeHref="/dev/hoy" />
         <ProfileView
           email="lucia@ejemplo.com"
           isAdmin
@@ -41,12 +42,7 @@ export default function DevPerfil() {
           intake={SAMPLE}
           plan={generatePlan(SAMPLE)}
           program={{ startText: "lunes, 11 de enero", reviewWeekday: 0, canChangeDate: true }}
-          reminderForm={
-            <>
-              <ReminderForm time="20:00" action={devUpdateReminder} />
-              <PushSettings time="20:00" actions={{ save: devPush, remove: devPush }} />
-            </>
-          }
+          reminderForm={<ReminderSettings time="20:00" action={devUpdateReminder} push={{ save: devPush, remove: devPush }} />}
           signOut={
             <button type="button" className={pf.signOut}>
               Cerrar sesión

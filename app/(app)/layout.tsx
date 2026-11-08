@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { AppBar } from "@/components/AppBar";
 import { BottomNav } from "@/components/BottomNav";
 import { requireUser } from "@/lib/auth";
 import { logEvent } from "@/lib/data/measure";
@@ -12,7 +13,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   // Hasta terminar el Día 0 no se entra en la app.
   const supabase = await createClient();
-  const { data: intake } = await supabase.from("intake").select("completed_at").eq("user_id", user.id).maybeSingle();
+  const { data: intake } = await supabase.from("intake").select("completed_at, name").eq("user_id", user.id).maybeSingle();
   const pending = onboardingPath({
     programStart: user.programStart,
     intakeCompleted: Boolean(intake?.completed_at),
@@ -29,6 +30,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <>
       <main id="contenido" className={s.main}>
+        <AppBar name={intake?.name as string | null | undefined} />
         {children}
       </main>
       <BottomNav />

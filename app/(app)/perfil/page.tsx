@@ -12,11 +12,10 @@ import { toIntake } from "@/lib/domain/intake";
 import { dateForDay, formatLongDate, todayInMadrid, weekdayOf } from "@/lib/domain/program";
 import { daysDone, groupByDate } from "@/lib/domain/stats";
 import { getStartDate } from "@/lib/settings";
-import { PushSettings } from "@/components/Push";
 import { removePushSubscription, savePushSubscription } from "@/lib/data/push";
 import { updateReminder } from "./actions";
 import { ProfileView } from "./ProfileView";
-import { ReminderForm } from "./ReminderForm";
+import { ReminderSettings } from "./ReminderSettings";
 import pf from "./perfil.module.css";
 
 export const metadata: Metadata = { title: "Perfil" };
@@ -65,10 +64,11 @@ export default async function PerfilPage() {
         ) : null
       }
       reminderForm={
-        <>
-          <ReminderForm time={intake.reminderTime} action={updateReminder} />
-          <PushSettings time={intake.reminderTime} actions={{ save: savePushSubscription, remove: removePushSubscription }} />
-        </>
+        <ReminderSettings
+          time={intake.reminderTime}
+          action={updateReminder}
+          push={{ save: savePushSubscription, remove: removePushSubscription }}
+        />
       }
       signOut={
         <form action={signOut}>

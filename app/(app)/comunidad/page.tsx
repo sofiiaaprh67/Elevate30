@@ -45,7 +45,7 @@ export default async function ComunidadPage({ searchParams }: { searchParams: Pr
 
   return (
     <>
-      <PageHeader title="Comunidad" subtitle={`${members.size} ${members.size === 1 ? "persona" : "personas"} en la ${COMMUNITY_NAME}.`} />
+      <PageHeader eyebrow={COMMUNITY_NAME} title="Comunidad." subtitle={`${members.size} ${members.size === 1 ? "persona" : "personas"} en la ${COMMUNITY_NAME}.`} />
 
       <nav className={s.filters} aria-label="Qué publicaciones ver">
         <Link href="/comunidad" className={s.filter} aria-current={!withMe ? "page" : undefined}>

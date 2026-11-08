@@ -6,7 +6,7 @@ import { VAPID_PUBLIC_KEY } from "@/lib/push-key";
 import { PillButton } from "./ui/Pill";
 import s from "./Push.module.css";
 
-type PushActions = { save: typeof savePushSubscription; remove: typeof removePushSubscription };
+export type PushActions = { save: typeof savePushSubscription; remove: typeof removePushSubscription };
 
 /**
  * Estado de los avisos en este dispositivo:
@@ -42,7 +42,7 @@ async function currentStatus(): Promise<{ status: Status; sub: PushSubscription 
   return { status: sub && Notification.permission === "granted" ? "on" : "off", sub };
 }
 
-function usePush(actions: PushActions) {
+export function usePush(actions: PushActions) {
   const [status, setStatus] = useState<Status>("loading");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();

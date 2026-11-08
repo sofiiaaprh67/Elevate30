@@ -1,3 +1,4 @@
+import { AppBar } from "@/components/AppBar";
 import { TodayView } from "@/app/(app)/hoy/TodayView";
 import s from "@/app/(app)/shell.module.css";
 import { BottomNav } from "@/components/BottomNav";
@@ -55,6 +56,7 @@ export default async function DevHoy({
   return (
     <>
       <main id="contenido" className={s.main}>
+        <AppBar name="Lucía" profileHref="/dev/perfil" homeHref="/dev/hoy" />
         <TodayView
           userId="00000000-0000-0000-0000-000000000000"
           start={DEFAULT_START_DATE}

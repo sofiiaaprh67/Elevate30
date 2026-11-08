@@ -1,3 +1,4 @@
+import { AppBar } from "@/components/AppBar";
 import { SystemView } from "@/app/(app)/sistema/SystemView";
 import s from "@/app/(app)/shell.module.css";
 import { BottomNav } from "@/components/BottomNav";
@@ -60,6 +61,7 @@ export default async function DevSistema({ searchParams }: { searchParams: Promi
   return (
     <>
       <main id="contenido" className={s.main}>
+        <AppBar name="Lucía" profileHref="/dev/perfil" homeHref="/dev/hoy" />
         <SystemView
           name={SAMPLE.name}
           pieces={pieces}

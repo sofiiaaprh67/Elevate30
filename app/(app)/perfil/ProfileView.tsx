@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { AvatarInitial } from "@/components/AppBar";
+import { HabitIcon } from "@/components/HabitIcon";
 import { SectionTitle } from "@/components/PageHeader";
 import { AGE_LABELS, GOAL_TYPE_LABELS, OCCUPATION_LABELS, SLOT_LABELS, WEEKDAY_PLURAL } from "@/content/labels";
 import { SLOTS, type Intake, type Plan } from "@/lib/domain/types";
@@ -8,6 +10,13 @@ import p from "./perfil.module.css";
 const Chevron = () => (
   <svg className={p.chevron} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
     <path d="M6 3.5L10.5 8 6 12.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const CalendarIcon = () => (
+  <svg className={p.rowIcon} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+    <rect x="3" y="4.5" width="14" height="12.5" rx="2.5" />
+    <path d="M3 8.5h14M7 2.5v4M13 2.5v4" />
   </svg>
 );
 
@@ -37,33 +46,49 @@ export function ProfileView({
     <>
       {/* ---------- Identidad ---------- */}
       <header className={p.identity}>
-        <span className={p.avatar} aria-hidden="true">
-          {intake.name.charAt(0).toLocaleUpperCase("es-ES")}
-        </span>
-        <div className={p.who}>
-          <h1 className={p.name}>{intake.name}</h1>
-          <p className={p.email}>{email}</p>
+        <p className={p.eyebrow}>Tu espacio</p>
+        <div className={p.idRow}>
+          <span className={p.avatarWrap}>
+            <AvatarInitial name={intake.name} size={76} />
+            {community ? (
+              <a href="#community-title" className={p.editBadge} aria-label="Editar tu perfil en la comunidad">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M10.5 3l2.5 2.5L6 12.5 3 13l.5-3z" />
+                </svg>
+              </a>
+            ) : null}
+          </span>
+          <div className={p.who}>
+            <h1 className={p.name}>{intake.name}.</h1>
+            <p className={p.program}>Programa ELEVATE 30</p>
+            <p className={p.email}>{email}</p>
+          </div>
         </div>
         {isFounder ? (
           <p className={p.badge}>
             <svg viewBox="0 0 20 20" aria-hidden="true">
               <path d="M10 2l2.2 4.6 5 .7-3.6 3.5.9 5L10 13.4l-4.5 2.4.9-5L2.8 7.3l5-.7z" fill="currentColor" />
             </svg>
-            Fundador
+            Fundador ELEVATE
           </p>
         ) : null}
       </header>
 
       {/* ---------- Objetivo ---------- */}
-      <section className={p.goal} aria-labelledby="goal-title">
-        <div className={p.goalHead}>
-          <h2 className={p.goalLabel} id="goal-title">
-            Tu objetivo
-          </h2>
-          <span className={p.goalType}>{GOAL_TYPE_LABELS[intake.goalType]}</span>
-        </div>
-        <p className={p.goalText}>«{intake.goalText}»</p>
-      </section>
+      <Link href="/plan" className={p.goal} aria-labelledby="goal-title goal-text">
+        <span className={p.goalBody}>
+          <span className={p.goalHead}>
+            <span className={p.goalLabel} id="goal-title">
+              Tu objetivo
+            </span>
+            <span className={p.goalType}>{GOAL_TYPE_LABELS[intake.goalType]}</span>
+          </span>
+          <span className={p.goalText} id="goal-text">
+            {intake.goalText}
+          </span>
+        </span>
+        <Chevron />
+      </Link>
 
       {/* ---------- Hábitos ---------- */}
       <section aria-labelledby="habits-title">
@@ -72,8 +97,11 @@ export function ProfileView({
           {SLOTS.map((slot) => (
             <li key={slot}>
               <Link href="/plan" className={p.rowLink}>
-                <span className={p.slot}>{SLOT_LABELS[slot]}</span>
+                <span className={p.habitTile} aria-hidden="true">
+                  <HabitIcon slot={slot} habitKey={plan[slot].key} />
+                </span>
                 <span className={p.rowMain}>
+                  <span className={p.slot}>{SLOT_LABELS[slot]}</span>
                   <span className={p.rowTitle}>{plan[slot].name}</span>
                   <span className={p.rowSub}>{plan[slot].schedule}</span>
                 </span>
@@ -82,30 +110,37 @@ export function ProfileView({
             </li>
           ))}
         </ul>
-        <p className={p.footnote}>Toca un hábito para ver sus niveles o cambiarlo.</p>
       </section>
 
       {/* ---------- Tu programa ---------- */}
       <section aria-labelledby="program-title">
         <SectionTitle id="program-title">Tu programa</SectionTitle>
-        <div className={p.panel}>
-          <dl className={p.facts}>
-            <div>
-              <dt>Día 1</dt>
-              <dd>{program.startText}</dd>
-            </div>
-            <div>
-              <dt>Revisiones</dt>
-              <dd>Los {WEEKDAY_PLURAL[program.reviewWeekday]}: días 7, 14, 21 y 28</dd>
-            </div>
-          </dl>
+        <div className={p.group}>
           {program.canChangeDate ? (
-            <Link href="/empezar" className={p.inlineLink}>
-              Cambiar mi fecha de inicio
+            <Link href="/empezar" className={p.listRow}>
+              <CalendarIcon />
+              <span className={p.listLabel}>Inicio</span>
+              <span className={p.listValue}>{program.startText}</span>
+              <Chevron />
             </Link>
-          ) : null}
+          ) : (
+            <div className={p.listRow}>
+              <CalendarIcon />
+              <span className={p.listLabel}>Inicio</span>
+              <span className={p.listValue}>{program.startText}</span>
+            </div>
+          )}
+          <div className={p.listRow}>
+            <CalendarIcon />
+            <span className={p.listLabel}>Revisiones</span>
+            <span className={p.listValue}>
+              Días 7, 14, 21 y 28
+              <span className={p.listSub}>Los {WEEKDAY_PLURAL[program.reviewWeekday]}</span>
+            </span>
+          </div>
           {reminderForm}
         </div>
+        <p className={p.footnote}>Un sistema que se adapta a ti.</p>
       </section>
 
       {/* ---------- Comunidad ---------- */}

@@ -1,3 +1,4 @@
+import { AppBar } from "@/components/AppBar";
 import { LessonsIndexView } from "@/app/(app)/lecciones/LessonsIndexView";
 import s from "@/app/(app)/shell.module.css";
 import { BottomNav } from "@/components/BottomNav";
@@ -9,6 +10,7 @@ export default async function DevLecciones({ searchParams }: { searchParams: Pro
   return (
     <>
       <main id="contenido" className={s.main}>
+        <AppBar name="Lucía" profileHref="/dev/perfil" homeHref="/dev/hoy" />
         <LessonsIndexView currentDay={day} doneDays={doneDays} start="2027-01-11" href={(d) => `/dev/hoy?dia=${d}`} />
       </main>
       <BottomNav />

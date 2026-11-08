@@ -2,7 +2,7 @@
   width: 100%;
   max-width: calc(var(--maxw) + 2 * var(--gutter));
   margin: 0 auto;
-  padding: calc(20px + var(--safe-top)) var(--gutter) calc(var(--nav-h) + 40px + var(--safe-bottom));
+  padding: calc(8px + var(--safe-top)) var(--gutter) calc(var(--nav-h) + 40px + var(--safe-bottom));
   display: grid;
   gap: var(--s-4);
   align-content: start;

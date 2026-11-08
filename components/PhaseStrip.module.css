@@ -1,32 +1,63 @@
+/* Método en 4 pasos: nodos unidos por una línea */
 .strip {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 var(--s-1);
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 .step {
+  position: relative;
   display: grid;
+  justify-items: center;
   gap: 8px;
 }
-.bar {
-  height: 4px;
-  border-radius: 4px;
+/* Línea hacia el paso siguiente */
+.step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: calc(50% + 16px);
+  right: calc(-50% + 16px);
+  height: 2px;
+  border-radius: 1px;
   background: var(--steel-2);
+}
+.step[data-state="done"]:not(:last-child)::after {
+  background: linear-gradient(90deg, var(--cyan), var(--blue));
+}
+.node {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 0 0 2px var(--steel-2);
+  background: var(--obsidian);
+  color: var(--obsidian);
+}
+.node svg {
+  width: 13px;
+  height: 13px;
+}
+.step[data-state="done"] .node {
+  background: var(--cyan);
+  box-shadow: 0 0 12px rgba(0, 217, 255, 0.45);
+}
+.step[data-state="now"] .node {
+  box-shadow:
+    inset 0 0 0 2.5px var(--cyan),
+    0 0 14px rgba(0, 217, 255, 0.35);
 }
 .label {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ash);
 }
-.step[data-state="done"] .bar {
-  background: var(--blue);
-  opacity: 0.55;
-}
-.step[data-state="now"] .bar {
-  background: var(--brand-grad);
-}
 .step[data-state="now"] .label {
+  font-weight: 700;
+  color: var(--porcelain);
+}
+.step[data-state="done"] .label {
   color: var(--porcelain);
 }
